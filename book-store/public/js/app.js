@@ -1,4 +1,4 @@
-class ProductList extends React.Component {
+class MenuDashboard extends React.Component {
   render() {
     return (
       <div>1</div>
@@ -8,6 +8,6 @@ class ProductList extends React.Component {
 
 
 ReactDOM.render(
-  <ProductList />,
+  <MenuDashboard />,
   document.getElementById('content')
 );
