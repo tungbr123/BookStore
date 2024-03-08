@@ -1,22 +1,13 @@
-class MenuDashboard extends React.Component {
-    render(){
-        return(
-            <div>
-               <div>1</div> 
-               <div>1</div> 
-               <div>1</div> 
-               <div>1</div> 
-            </div>
-        )
-    }
+class ProductList extends React.Component {
+  render() {
+    return (
+      <div>1</div>
+    );
+  }
 }
 
 
-
-
-
-
 ReactDOM.render(
-    <MenuDashboard/>,
-    document.getElementById('content')
+  <ProductList />,
+  document.getElementById('content')
 );
