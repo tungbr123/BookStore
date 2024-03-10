@@ -1,0 +1,14 @@
+
+#logoFahasa img{
+    width: 220px;
+    overflow-clip-margin: content-box;
+    overflow: clip;
+    box-sizing: border-box;
+    overflow-clip-margin: content-box;
+    overflow: clip;
+    padding-left: 120px 0;
+}
+.fhs-header-top-second-bar{
+    width: 1230px;
+    height:68px;
+}
