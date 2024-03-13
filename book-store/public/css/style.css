@@ -46,3 +46,34 @@
     height: 36px;
 
 }
+
+  /* Style cho dropdown content */
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    padding: 0 0;
+  }
+  .dropdown{
+    padding: 10px 10px;
+  }
+  /* Hiển thị dropdown content khi hover trên dropdown button */
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+  
+  /* Style cho các link bên trong dropdown */
+  .dropdown-content a {
+    color: black;
+    padding: 10px 16px;
+    text-decoration: none;
+    display: block;
+  }
+  
+  /* Thay đổi màu sắc của các link khi hover */
+  .dropdown-content a:hover {
+    background-color: #ddd;
+  }
