@@ -6,6 +6,7 @@ import { CacheProvider, Link } from "@chakra-ui/next-js";
 import { theme } from "./theme";
 import { Navbar } from "@/components/Navbar/Navbar";
 import { Footer } from '@/components/Footer';
+import { AppContextProvider } from '@/context/AppContext';
 
 
 
@@ -25,9 +26,11 @@ export default function RootLayout({
       <body>
         <CacheProvider>
           <ChakraProvider theme={theme}>
-            <Navbar />
-            {children}
-            <Footer />
+            <AppContextProvider>
+              <Navbar />
+              {children}
+              <Footer />
+            </AppContextProvider>
           </ChakraProvider>
         </CacheProvider>
       </body>

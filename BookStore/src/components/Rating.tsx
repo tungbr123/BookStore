@@ -1,12 +1,17 @@
 import { colors } from "@/app/theme"
+import { IRating } from "@/model";
 import { Flex, Text } from "@chakra-ui/react"
 import ReactStars from "react-stars"
 
-export const Rating=() =>{
+interface IRatingProps {
+    rating: IRating; 
+}
+
+
+export const Rating=({rating} : IRatingProps) =>{
     return(
         <Flex>
-            <ReactStars count={5} value={3.5} size={18} color2={colors.brand.primary} edit={false}></ReactStars>
-            <Text>200</Text>
+            <ReactStars count={5} value={rating.rate} size={18} color2={colors.brand.primary} edit={false}></ReactStars>
         </Flex>
     )
 }

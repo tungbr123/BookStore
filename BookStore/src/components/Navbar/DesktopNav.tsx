@@ -3,6 +3,8 @@ import { cartSectionStyles, desktopNavStyles, logoSectionStyles } from "./style"
 import { AppLogo } from "../AppLogo"
 import { navItems } from "@/helpers"
 import { Search } from "../Search/Search"
+import { Wishlist } from "../Wishlist/Wishlist"
+import { Cart } from "../Cart/Cart"
 
 
 export const DesktopNav = () => {
@@ -20,9 +22,9 @@ export const DesktopNav = () => {
                 ))}
                 <Box><Search /></Box>
             </Stack>
-            <Stack {...cartSectionStyles} >
-                <Box>Wishlist</Box>
-                <Box>Cart</Box>
+            <Stack direction="row" spacing={2} >
+                <Wishlist />
+                <Cart />
             </Stack>
         </Flex>
     )
