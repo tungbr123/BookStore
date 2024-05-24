@@ -1,6 +1,6 @@
 import { Hero } from "@/components/Hero/Hero"
 import { AllProducts } from "@/features/products"
-import { products } from "../../../../mocks/products"
+import { products } from "../../../../../mocks/products"
 import { CustomBreadcrumb } from "@/components/CustomBreadcrumb"
 import { defaultBreadcrumbItems } from "@/helpers"
 

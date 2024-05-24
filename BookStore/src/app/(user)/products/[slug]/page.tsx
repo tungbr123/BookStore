@@ -1,6 +1,7 @@
 
 import { ProductDetails } from "@/features/products/ProductDetails"
-import { products } from "../../../../mocks/products"
+import { products } from "../../../../../mocks/products"
+
 
 const ProductDetailsPage =() =>{
     return <div>

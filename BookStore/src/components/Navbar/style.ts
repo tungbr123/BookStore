@@ -17,7 +17,16 @@ export const desktopNavStyles: FlexProps ={
     borderColor: "gray-200",
     display: {base: 'none', lg: 'flex'}
 }
-
+export const adminNavStyles: FlexProps ={
+    position: 'fixed',
+    left: 0,
+    top: 0,
+    height: '100vh',
+    width: '250px',
+    backgroundColor: 'white', // Adjust as needed
+    padding: '1rem',
+    boxShadow: '2px 0 5px rgba(0, 0, 0, 0.1)',
+}
 export const logoSectionStyles: StackProps = {
     direction: "row",
     gap: 6,

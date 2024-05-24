@@ -1,21 +1,22 @@
 "use client"
 
 import 'swiper/swiper-bundle.css';
-import { ChakraProvider } from "@chakra-ui/react";
+import { ChakraProvider, Flex, HStack, IconButton } from "@chakra-ui/react";
 import { CacheProvider, Link } from "@chakra-ui/next-js";
-import { theme } from "./theme";
+import { theme } from "../../theme";
 import { Navbar } from "@/components/Navbar/Navbar";
 import { Footer } from '@/components/Footer';
 import { AppContextProvider } from '@/context/AppContext';
-
-
-
+import React from 'react';
+import { Sidebar } from '@/components/Admin/Sidebar';
+import { MdMenu } from 'react-icons/md';
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [collapse, setCollapse] = React.useState(false);
   return (
     <html lang="en">
       <head>
@@ -27,7 +28,7 @@ export default function RootLayout({
         <CacheProvider>
           <ChakraProvider theme={theme}>
             <AppContextProvider>
-              <Navbar />
+              <Navbar/>
               {children}
               <Footer />
             </AppContextProvider>

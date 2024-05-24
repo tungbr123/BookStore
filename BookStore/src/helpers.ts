@@ -1,6 +1,6 @@
 import { IBreadcrumbItem, IItem, NavItem } from "./model";
 
-export const navItems: NavItem[] =[
+export const navItems: NavItem[] = [
     {
         label: "All Products",
         href: '/products',
@@ -10,26 +10,27 @@ export const navItems: NavItem[] =[
         href: "/categories",
     },
 ]
-export const defaultBreadcrumbItems: IBreadcrumbItem[]=[
+export const defaultBreadcrumbItems: IBreadcrumbItem[] = [
     {
         name: 'Products',
         link: '/products'
     },
     {
         name: 'Categories',
-        link:'/categories'
+        link: '/categories'
     }
 ]
-export const getSubstring = (text: string, substringEnd: number): string =>{
-    return text.length > substringEnd ? text.substring(0, substringEnd)+'...' :text
+export const getSubstring = (text: string, substringEnd: number): string => {
+    return text.length > substringEnd ? text.substring(0, substringEnd) + '...' : text
 }
 
 export const calculateItemsTotal = (items: IItem[]): number => {
     return items
-      .map((item) => ({ price: item.price, count: item.count }))
-      .reduce(
-        (previousValue, currentValue) =>
-          previousValue + currentValue.price * currentValue.count,
-        0
-      );
-  };
+        .map((item) => ({ price: item.price, count: item.count }))
+        .reduce(
+            (previousValue, currentValue) =>
+                previousValue + currentValue.price * currentValue.count,
+            0
+        );
+};
+

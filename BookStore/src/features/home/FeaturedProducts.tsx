@@ -43,8 +43,8 @@ export const FeaturedProducts = ({ title, products }: FeaturedProductsProp) => {
                         </SwiperSlide>
                     ))
                 }
-                <SwiperNavButton />
-            </Swiper>
-        </Box>
+                <SwiperNavButton /> 
+            </Swiper> 
+        </Box> 
     )
 }

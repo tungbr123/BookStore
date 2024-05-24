@@ -2,7 +2,7 @@
 import { FeaturedProducts } from "@/features/home/FeaturedProducts";
 import { Banner } from "@/features/home/Banner";
 import { TopCategories } from "@/features/home/TopCategories";
-import { featureItems } from "../../mocks/featured";
+import { featureItems } from "../../../mocks/featured";
 
 export default function Home() {
   return (

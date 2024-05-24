@@ -1,4 +1,4 @@
-import { Box, Flex, Stack, Link } from "@chakra-ui/react"
+import { Box, Flex, Stack, Link, Button } from "@chakra-ui/react"
 import { cartSectionStyles, desktopNavStyles, logoSectionStyles } from "./style"
 import { AppLogo } from "../AppLogo"
 import { navItems } from "@/helpers"
@@ -21,6 +21,21 @@ export const DesktopNav = () => {
                     </Box>
                 ))}
                 <Box><Search /></Box>
+            </Stack>
+            <Stack direction="row" spacing={2} >
+                <Button as={"a"} fontSize={"sm"} variant={"link"} href="signin">
+                    Sign In
+                </Button>
+                <Button as={"a"}
+                display={{base:"none", md: "inline-flex"}} 
+                fontSize={"sm"}
+                href="signup"
+                fontWeight={600}
+                color={"white"}
+                bg={"pink.400"}
+                _hover={{bg:"pink.300"}}>
+                    Sign Up
+                </Button>
             </Stack>
             <Stack direction="row" spacing={2} >
                 <Wishlist />

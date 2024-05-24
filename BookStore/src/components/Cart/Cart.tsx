@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Box,
   Button,
@@ -13,12 +15,13 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 
+import { calculateItemsTotal } from '@/helpers';
 import Link from 'next/link';
 import { useContext, useRef } from 'react';
 import { BsCart4 } from 'react-icons/bs';
 import { CartItem } from './CartItem';
 import { AppConText } from '@/context/AppContext';
-import { calculateItemsTotal } from '@/helpers';
+
 
 export const Cart = () => {
   const {
@@ -35,7 +38,6 @@ export const Cart = () => {
     cart.forEach((cartItem) => {
       addItem('checkout', cartItem, cartItem.count);
     });
-
     onClose();
   };
 

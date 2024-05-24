@@ -1,4 +1,4 @@
-import { colors } from "@/app/theme"
+import { colors } from "@/theme"
 import { IRating } from "@/model";
 import { Flex, Text } from "@chakra-ui/react"
 import ReactStars from "react-stars"

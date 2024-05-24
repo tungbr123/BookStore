@@ -14,11 +14,11 @@ export interface IProduct{
     name: string;
     description: string;
     price: number;
-    promotionalPrice: number;
+    promotional_price: number;
     quantity: number;
     mainImage: string;
     category: ICategory;
-    rating: IRating;
+    rating: number;
 }
 
 export interface ICategory{
@@ -31,8 +31,8 @@ export interface IFeaturedItems{
     bestDeals: IProduct[];
     mostSellingProducts: IProduct[];
     trendingProducts: IProduct[];
+    relatedProducts: IProduct[];
 }
-
 export interface IBreadcrumbItem{
     name: string;
     link: string;

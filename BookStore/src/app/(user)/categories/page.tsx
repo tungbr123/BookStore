@@ -1,5 +1,5 @@
 import { AllCategories } from "@/features/categories"
-import { categories } from "../../../mocks/categories"
+import { categories } from "../../../../mocks/categories"
 import { Hero } from "@/components/Hero/Hero"
 
 

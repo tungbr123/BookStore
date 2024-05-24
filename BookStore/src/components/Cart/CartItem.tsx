@@ -1,3 +1,5 @@
+'use client';
+import { AppConText } from '@/context/AppContext';
 import {
   Button,
   Grid,
@@ -12,7 +14,6 @@ import { IItem } from '@/model';
 import Link from 'next/link';
 import { useContext } from 'react';
 import { BsTrash } from 'react-icons/bs';
-import { AppConText } from '@/context/AppContext';
 
 interface CartItemProps {
   item: IItem;
@@ -30,7 +31,7 @@ export const CartItem = ({ item }: CartItemProps) => {
       my="2"
     >
       <GridItem>
-        <Link href={`/products/${item.id}`}>
+        <Link href={`/products/${item.name}`}>
           <Image
             src={item.mainImage}
             boxSize="40px"
@@ -41,7 +42,7 @@ export const CartItem = ({ item }: CartItemProps) => {
         </Link>
       </GridItem>
       <GridItem colSpan={{ base: 5, lg: 3 }}>
-        <Link href={`/products/${item.id}`}>
+        <Link href={`/products/${item.name}`}>
           <Text>{item.name}</Text>
         </Link>
       </GridItem>
@@ -61,7 +62,7 @@ export const CartItem = ({ item }: CartItemProps) => {
         </HStack>
       </GridItem>
       <GridItem textAlign="right" colSpan={{ base: 2, lg: 1 }}>
-        <Text fontWeight="bold">$ {item.price * item.count}</Text>
+        <Text fontWeight="bold">{item.price * item.count}</Text>
       </GridItem>
       <GridItem textAlign="right">
         <Button
