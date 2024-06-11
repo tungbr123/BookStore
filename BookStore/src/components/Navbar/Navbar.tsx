@@ -1,6 +1,6 @@
 import { Box } from "@chakra-ui/react"
 import { navbarStyles } from "./style"
-import { DesktopNav } from "./DesktopNav"
+import { DesktopNav } from "./DesktopNav.jsx"
 import { MobileNav } from "./MobileNav"
 import { AdminNav } from "./LayoutAdmin"
 

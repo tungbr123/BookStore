@@ -21,6 +21,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/signin/page.jsx", "src/app/signin/page.jsx", "src/components/Navbar/DesktopNav.jsx", "src/app/forgot-password/page.jsx", "src/app/reset-password/page.jsx", "src/app/signup/page.jsx", "src/components/AddToCartButton.jsx", "src/context/AppContext.tsx", "src/store.js", "src/components/Cart/Cart.jsx", "src/components/Cart/CartItem.jsx", "src/features/checkout/ReviewItems.jsx", "src/features/checkout/index.jsx", "src/features/checkout/DeliveryInformation.jsx", "src/features/checkout/PaymentDetails.jsx", "src/app/admin/page.tsx", "src/app/admin/layout.jsx"],
   "exclude": ["node_modules"]
 }

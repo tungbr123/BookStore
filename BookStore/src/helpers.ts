@@ -21,7 +21,7 @@ export const defaultBreadcrumbItems: IBreadcrumbItem[] = [
     }
 ]
 export const getSubstring = (text: string, substringEnd: number): string => {
-    return text.length > substringEnd ? text.substring(0, substringEnd) + '...' : text
+    return text?.length > substringEnd ? text.substring(0, substringEnd) + '...' : text;
 }
 
 export const calculateItemsTotal = (items: IItem[]): number => {

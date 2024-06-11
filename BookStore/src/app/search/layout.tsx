@@ -12,9 +12,10 @@ import { Sidebar } from '@/components/Admin/Sidebar';
 import { MdMenu } from 'react-icons/md';
 import { Provider } from 'react-redux';
 import store from '@/store';
-import { Router } from 'react-router';
 import { CartProvider } from '@/CartContext';
 import { CheckOutProvider } from '@/checkoutContext';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { ProductDetails } from '@/features/products/ProductDetails';
 
 export default function RootLayout({
   children,
@@ -30,21 +31,21 @@ export default function RootLayout({
         {/* <Link rel="icon" type="image/jpg" href="public/bookstore.jpg"></Link> */}
       </head>
       <body>
-        <Provider store={store}>
-          <CacheProvider>
-            <ChakraProvider theme={theme}>
-                <AppContextProvider>
-                  <CartProvider>
-                    <CheckOutProvider>
-                      <Navbar />
-                      {children}
-                      <Footer />
-                    </CheckOutProvider>
-                  </CartProvider>
-                </AppContextProvider>
-            </ChakraProvider>
-          </CacheProvider>
-        </Provider>
+        <CacheProvider>
+          <ChakraProvider theme={theme}>
+            <Provider store={store}>
+              <AppContextProvider>
+                <CartProvider>
+                  <CheckOutProvider>
+                    <Navbar />
+                    {children}
+                    <Footer />
+                  </CheckOutProvider>
+                </CartProvider>
+              </AppContextProvider>
+            </Provider>
+          </ChakraProvider>
+        </CacheProvider>
       </body>
     </html>
   );

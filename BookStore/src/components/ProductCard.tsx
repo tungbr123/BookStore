@@ -11,7 +11,7 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import { getSubstring } from '@/helpers';
-import { IProduct } from '@/model';
+import { ICategory, IProduct } from '@/model';
 import Link from 'next/link';
 import { AddToWishlistButton } from './AddToWishlistButton';
 
@@ -22,22 +22,56 @@ import { AppConText } from '@/context/AppContext';
 import { useContext, useState } from 'react';
 import ReactStars from 'react-stars';
 import { colors } from '@/theme';
+import { useCheckOut } from '@/checkoutContext';
+import { useRouter } from 'next/navigation';
 
 interface ProductCardProps {
   product: IProduct;
+}
+interface ProductBuyNow{
+  productid: number;
+  name: string;
+  description: string;
+  price: number;
+  promotional_price: number;
+  quantity: number;
+  image: string;
+  category: ICategory;
+  rating: number;
+  count: number
 }
 
 export const ProductCard = ({ product }: ProductCardProps) => {
   const { isAdded, addItem, resetItems } = useContext(AppConText);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const quantity1 = 1
+  const quantity1 = 1;
+  const [check, setCheck] = useCheckOut()
+  const router= useRouter()
+  const product1 : ProductBuyNow = 
+    {
+      productid: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      promotional_price: product.promotional_price,
+      quantity: product.quantity,
+      image: product.image,
+      category: product.category,
+      rating: product.rating,
+      count: 1
+    }
+  const handleBuyNowButton =() => {
+    setCheck([])
+    setCheck([product1])
+    router.push('checkout')
+  }
   return (
     <Card w="xs" pos="relative" m="0.5rem">
       <AddToWishlistButton product={product} />
       <CardBody>
         <Link href={`/products/${product.id}`}>
           <Box
-            bg={`center / contain no-repeat url(${product.mainImage})`}
+            bg={`center / contain no-repeat url(${product.image})`}
             borderRadius="lg"
             boxSize="200px"
             mx="auto"
@@ -59,7 +93,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           </Flex>
           {/* <Rating rating={product.rating} /> */}
           <Flex justify="space-between" text-align="center" >
-            <Link href="/checkout">
+            {/* <Link href="/checkout"> */}
               <Button
                 variant="outline"
                 borderColor="brand.primary"
@@ -67,16 +101,12 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                 borderRadius="50px"
                 size="sm"
                 w="130px"
-                onClick={() => {
-                  resetItems('checkout');
-                  addItem('checkout', product, quantity1)
-                  onClose()
-                }}>
+                onClick={handleBuyNowButton}>
                 Buy Now
               </Button>
-            </Link>
+            {/* </Link> */}
             <Flex color="brand.primaryDark" fontWeight="bold"></Flex>
-            <AddToCartButton product={product} />
+            <AddToCartButton  product={product} count={1} />
           </Flex>
         </Stack>
       </CardBody>

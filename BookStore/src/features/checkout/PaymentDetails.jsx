@@ -1,21 +1,89 @@
+import api from "@/ApiProcess/api";
+import { useCart } from "@/CartContext";
+import { useCheckOut } from "@/checkoutContext";
+import { DeliveryInfoContext } from "@/context";
 import { AppConText } from "@/context/AppContext";
 import { calculateItemsTotal } from "@/helpers"
+import showToast from "@/hooks/useToast";
 import { Box, Button, Card, CardBody, CardHeader, Divider, Flex, FormLabel, Heading, Input, Radio, RadioGroup, Stack, Text } from "@chakra-ui/react"
+import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
 export const PaymentDetails = () => {
-    const [subTotal, setSubTotal] = useState<number>(0);
-    const [tax, setTax] = useState<number>(0);
-    const {
-        state: { checkout },
-    } = useContext(AppConText);
+    const router= useRouter()
+    const [state, setState] = useContext(DeliveryInfoContext)
+    const [cart, setCart] = useCart()
+    const [check, setCheck] = useCheckOut()
+    const [checkout, setCheckOut] =useState([])
+    const loggedUser = useSelector((state) => state.auth)
+    const [subTotal, setSubTotal] = useState(0);
+    const [tax, setTax] = useState(0);
+    // const {
+    //     state: { checkout },
+    // } = useContext(AppConText);
 
-    useEffect(() => {
-        const subTotal = calculateItemsTotal(checkout);
+    useEffect(() => {              
+        const subTotal = calculateItemsTotal(check);
         const tax = 0.1 * subTotal;
-        setSubTotal(subTotal);
+        setSubTotal(subTotal+tax-5000+20000);
         setTax(tax);
-    }, [checkout]);
+        setCheckOut(check)
+    }, [check]);
+    const handlePayMent= async() =>{
+        try {
+            // Gọi API đăng nhập bên client
+            const responseOrder = await api.post('addOrder', {
+                userid: loggedUser.userid,
+                phone: state.phone,
+                address: state.address,
+                money_from_user: subTotal
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (responseOrder.status === 200) {
+                // console.log(data.data?.user);
+                // localStorage.setItem('user', JSON.stringify(data.data?.user));
+                console.log(check)
+                const responseOrderItem = await api.post('addOrderitem', 
+                    checkout, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                if(responseOrderItem.status ==200)
+                {
+
+                    const responseDeleteCartItem = await api.delete(`deleteCartitemByUserID?userid=${loggedUser.userid}`,{},
+                        {
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        } 
+                    );
+                    if(responseDeleteCartItem.status==200)
+                        {
+                            showToast('Đặt hàng thành công');
+                            router.push('/')
+                        }
+    
+                    else
+                        showToast("Xóa cartitem thất bại")
+                }
+                else
+                    showToast('Gửi dữ liệu đơn hàng thất bại');
+            } else {
+                const message = 'Đăt hàng thất bại';
+                showToast(message, 1);
+            }
+        } catch (error) {
+
+            const message = 'Có lỗi khi đặt hàng'+error;
+            showToast(message, 1);
+        }
+    }
     return (
         <Card borderWidth="1px" borderColor="gray.200" shadow="none" p="2rem">
             <CardHeader>
@@ -66,22 +134,22 @@ export const PaymentDetails = () => {
                 <Box>
                     <Flex justify="space-between" align="center" my="1rem">
                         <Text fontWeight="bold">Giá tổng sản phẩm</Text>
-                        <Text fontWeight="bold">{subTotal}đ</Text>
+                        <Text fontWeight="bold">{subTotal-tax-20000+5000}đ</Text>
                     </Flex>
 
                     <Flex justify="space-between" align="center" my="1rem">
                         <Text fontWeight="bold">Thuế(10%)</Text>
-                        <Text fontWeight="bold">-{tax}đ</Text>
+                        <Text fontWeight="bold">{tax}đ</Text>
                     </Flex>
 
                     <Flex justify="space-between" align="center" my="1rem">
                         <Text fontWeight="bold">Giảm giá voucher</Text>
-                        <Text fontWeight="bold">-{tax}đ</Text>
+                        <Text fontWeight="bold">-5000đ</Text>
                     </Flex>
 
                     <Flex justify="space-between" align="center" my="1rem">
                         <Text fontWeight="bold">Phí vận chuyển</Text>
-                        <Text fontWeight="bold">-20000đ</Text>
+                        <Text fontWeight="bold">20000đ</Text>
                     </Flex>
                     <Divider />
                     <Flex justify="space-between" align="center" my="1rem">
@@ -91,6 +159,7 @@ export const PaymentDetails = () => {
                 </Box>
 
                 <Button
+                    onClick={handlePayMent}
                     bgColor="brand.primary"
                     color="white"
                     w="100%"

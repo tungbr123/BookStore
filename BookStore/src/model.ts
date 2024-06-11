@@ -10,14 +10,14 @@ export interface IRating{
 }
 
 export interface IProduct{
-    id: string;
+    id: number;
     name: string;
     description: string;
     price: number;
     promotional_price: number;
     quantity: number;
-    mainImage: string;
-    category: ICategory;
+    image: string;
+    category: ICategory
     rating: number;
 }
 
@@ -51,9 +51,17 @@ export interface IItem extends IProduct{
 export interface IContext{
     state: IState;
     addItem: (key: ItemKey, product: IProduct, count?: number) => void;
-    removeItem: (key: ItemKey, productId: string) => void;
-    increaseCount: (key: ItemKey, productId: string) => void;
-    decreaseCount: (key: ItemKey, productId: string) => void;
+    removeItem: (key: ItemKey, productId: number) => void;
+    increaseCount: (key: ItemKey, productId: number) => void;
+    decreaseCount: (key: ItemKey, productId: number) => void;
     resetItems: (key: ItemKey) => void;
-    isAdded: (key: ItemKey, productId: string) => boolean;
+    isAdded: (key: ItemKey, productId: number) => boolean;
+}
+
+// model.ts
+export interface IReview {
+    name: string;
+    stars: number;
+    content: string;
+    avatar: string;
 }

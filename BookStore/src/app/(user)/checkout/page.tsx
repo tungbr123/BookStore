@@ -1,12 +1,16 @@
+"use client"
 import { CheckOut } from "@/features/checkout";
 import { NextPage } from "next"
+import { DeliveryInfoProvider } from '@/context';
+import { CheckOutProvider } from "@/checkoutContext";
 
-
-const CheckOutPage: NextPage =() =>{
+const CheckOutPage: NextPage = () => {
     return (
-        <div>
-            <CheckOut />
-        </div>
+        <DeliveryInfoProvider>
+                <div>
+                    <CheckOut />
+                </div>
+        </DeliveryInfoProvider>
     )
 }
 export default CheckOutPage;

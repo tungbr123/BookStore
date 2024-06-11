@@ -1,6 +1,20 @@
+import { DeliveryInfoContext } from "@/context"
 import { Box, Card, CardBody, CardHeader, FormLabel, Heading, Input, Stack } from "@chakra-ui/react"
+import {  useContext, useState } from "react"
 
 export const DeliveryInformation = () => {
+    const [state, setState] = useContext(DeliveryInfoContext)
+    const [address, setAddress] = useState('')
+    const [phone, setPhone] = useState('')
+
+    const handleAddressChange=(e) =>{
+        setAddress(e.target.value) 
+        setState(prevState => ({ ...prevState, address: e.target.value }));
+    }
+    const handlePhoneChange=(e) =>{
+        setPhone(e.target.value) 
+        setState(prevState => ({ ...prevState, phone: e.target.value }));
+    }
     return (
         <Card borderWidth="1px" borderColor="gray.200" shadow="none">
             <CardHeader>
@@ -15,12 +29,12 @@ export const DeliveryInformation = () => {
 
                     <Box>
                         <FormLabel>Address</FormLabel>
-                        <Input type="text" placeholder="address" />
+                        <Input value={address} onChange={handleAddressChange} type="text" placeholder="address" />
                     </Box>
 
                     <Box>
                         <FormLabel>Phone</FormLabel>
-                        <Input type="text" placeholder="phone number" />
+                        <Input value={phone} onChange={handlePhoneChange} type="text" placeholder="phone number" />
                     </Box>
 
                     <Box>

@@ -9,9 +9,9 @@ export default function Home() {
     <div>
       <Banner />
       <TopCategories categories={featureItems.topCategories} />
+      <FeaturedProducts title="Trending Products" products={featureItems.trendingProducts} />
       <FeaturedProducts title="Best Deals For You" products={featureItems.bestDeals}/>
       <FeaturedProducts title="Best Selling Products" products={featureItems.mostSellingProducts}/>
-      <FeaturedProducts title="Trending Products" products={featureItems.trendingProducts} />
     </div>
   )
 }

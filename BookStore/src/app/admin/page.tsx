@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Text, SimpleGrid, Box } from '@chakra-ui/react';
 import { useSelector } from 'react-redux';
 import { useRouter } from 'next/router';
@@ -30,20 +30,17 @@ const statData = [
 ];
 
 
-  export default function Home() {
-    return (
-      // <Container >
-        <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} spacing={5} mb={14}>
-          {statData.map((data) => (
-            <Box textAlign="center" key={data.id} p={5} boxShadow="md" rounded="md" borderWidth={1} background="#a1a1ff">
-              <Text color="#fff">
-                {data.score}
-              </Text>
-              <Text color="#fff" fontSize="19px">{data.label}</Text>
-            </Box>
-          ))}
-        </SimpleGrid> 
-        /* <TableDashboard /> */
-      // </Container>
-    )
-  }
+export default function Home() {
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+  return (
+    // <Container >
+    <>
+    </>
+    /* <TableDashboard /> */
+    // </Container>
+  )
+}

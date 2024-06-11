@@ -8,7 +8,6 @@ const ProductsPage = async () => {
     const response = await fetch("http://localhost:8080/api/product/getAllProduct");
 
     const products: IProduct[] = await response.json()
-    console.log(products)
     return (
         <>
             <Hero
