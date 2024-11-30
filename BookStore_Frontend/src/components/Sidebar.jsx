@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, VStack, Text, Icon, IconButton, Link, Flex } from '@chakra-ui/react';
 import { FiHome, FiBox, FiDollarSign, FiUsers, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-
+import { BiCollection } from "react-icons/bi";
 export const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
 
@@ -61,6 +61,14 @@ export const Sidebar = () => {
               <Flex align="center">
                 <Icon as={FiUsers} fontSize="16" mr="4" />
                 <Text>Quản lý Người dùng</Text>
+              </Flex>
+            </Link>
+          </Flex>
+          <Flex align="center" p="4" borderRadius="lg" role="group" cursor="pointer" _hover={{ bg: 'gray.700', color: 'white' }}>
+            <Link href="/admin/vouchers" passHref style={{ textDecoration: 'none' }}>
+              <Flex align="center">
+                <Icon as={BiCollection} fontSize="16" mr="4" />
+                <Text>Quản lý Vouchers</Text>
               </Flex>
             </Link>
           </Flex>

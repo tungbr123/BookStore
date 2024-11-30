@@ -1,6 +1,7 @@
 package com.example.demo.model.response;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -28,8 +29,15 @@ public class OrderResponse {
     private String address;
     private Long phone;
     
+    private int discount_value_vouchers;
+    
     private String status;
-    private Date dateOrder;
+    private Date date_order;
     private Long amountFromUser;
     private List<OrderitemResponse> orderItems;
+    private int totalPages;
+    
+    private boolean overdue;
+    private long daysPending;
+    private String messageStatusPending;
 }

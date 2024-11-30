@@ -33,6 +33,7 @@ import {
 import { SearchIcon } from '@chakra-ui/icons';
 import axios from 'axios';
 import { useFilter } from '@/filterContext';
+import DatePicker from 'react-datepicker';
 
 const PurchaseManagement = () => {
   const [purchases, setPurchases] = useState([]);
@@ -41,28 +42,39 @@ const PurchaseManagement = () => {
   const [selectedPurchase, setSelectedPurchase] = useState(null);
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0); // Trang hiện tại
+  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     const fetchPurchases = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/getAllOrders');
-        const orders = response.data.data; // Assuming your API response structure
-        setPurchases(orders);
+        const response = await axios.get(`http://localhost:8080/getAllOrdersWithPagingByStatus`, {
+          params: {
+            page: currentPage,
+            size: pageSize,
+            status: filter, // Chỉ thêm trạng thái nếu không phải "all"
+          },
+        });
+        const ordersPage = response.data.data;
+        setPurchases(ordersPage);
+        setTotalPages(ordersPage[0].totalPages);
+
       } catch (error) {
-        console.error('Failed to fetch purchases:', error);
+        console.error("Failed to fetch purchases:", error);
       }
     };
 
     fetchPurchases();
-  }, [],purchases);
+  }, [filter, currentPage, pageSize]);
 
   const handleConfirm = async (id) => {
     try {
       const response = await axios.put(`http://localhost:8080/confirm/${id}`);
       if (response.data.statusCode === "200") {
         toast({
-          title: 'Xác nhận đơn hàng',
-          description: `Xác nhận đơn hàng thành công.`,
+          title: 'Confirm Order',
+          description: `Order confirmed successfully.`,
           status: 'success',
           duration: 3000,
           isClosable: true,
@@ -75,7 +87,7 @@ const PurchaseManagement = () => {
         onClose();
       } else {
         toast({
-          title: 'Xác nhận đơn hàng thất bại',
+          title: 'Order Confirmation Failed',
           description: response.data.message,
           status: 'error',
           duration: 3000,
@@ -85,8 +97,8 @@ const PurchaseManagement = () => {
     } catch (error) {
       console.error('Failed to confirm order:', error);
       toast({
-        title: 'Xác nhận đơn hàng thất bại',
-        description: 'Đã xảy ra lỗi trong quá trình xác nhận đơn hàng.',
+        title: 'Order Confirmation Failed',
+        description: 'An error occurred while confirming the order.',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -99,8 +111,8 @@ const PurchaseManagement = () => {
       const response = await axios.put(`http://localhost:8080/complete/${id}`);
       if (response.data.statusCode === "200") {
         toast({
-          title: 'Hoàn thành đơn hàng',
-          description: `Hoàn thành đơn hàng thành công.`,
+          title: 'Complete Order',
+          description: `Order completed successfully.`,
           status: 'success',
           duration: 3000,
           isClosable: true,
@@ -113,7 +125,7 @@ const PurchaseManagement = () => {
         onClose();
       } else {
         toast({
-          title: 'Hoàn thành đơn hàng thất bại',
+          title: 'Order Completion Failed',
           description: response.data.message,
           status: 'error',
           duration: 3000,
@@ -123,8 +135,8 @@ const PurchaseManagement = () => {
     } catch (error) {
       console.error('Failed to complete order:', error);
       toast({
-        title: 'Hoàn thành đơn hàng thất bại',
-        description: 'Đã xảy ra lỗi trong quá trình hoàn thành đơn hàng.',
+        title: 'Order Completion Failed',
+        description: 'An error occurred while completing the order.',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -138,6 +150,8 @@ const PurchaseManagement = () => {
   };
 
   const filteredPurchases = purchases.filter(purchase => {
+    if (filter == "need-confirmation")
+      return true;
     if (filter !== 'all' && purchase.status !== filter) {
       return false;
     }
@@ -150,98 +164,103 @@ const PurchaseManagement = () => {
     );
   });
 
-  let orderIndex = 1; // Initialize the order index
-
   return (
     <Container maxW="container.xl" py={4}>
       <Box mb={4}>
-        <Heading size="lg" mb={4}>Quản lý Đơn Hàng</Heading>
+        <Heading size="lg" mb={4}>Order Management</Heading>
         <Flex mb={4}>
           <InputGroup mr={4}>
             <Input
-              placeholder="Tìm kiếm user hoặc sản phẩm..."
+              placeholder="Search user or product..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <InputRightElement>
               <IconButton
-                aria-label="Tìm kiếm"
+                aria-label="Search"
                 icon={<SearchIcon />}
-                onClick={() => {}}
+                onClick={() => { }}
               />
             </InputRightElement>
           </InputGroup>
           <Select
-            placeholder="Lọc theo trạng thái"
             value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+            onChange={(e) => {
+              setFilter(e.target.value);
+              setCurrentPage(0);
+            }
+            }
           >
-            <option value="all">Tất cả</option>
-            <option value="completed">Hoàn thành</option>
-            <option value="pending">Đang chờ</option>
-            <option value="delivering">Đang giao</option>
-            <option value="canceled">Đã hủy</option>
+            <option value="all">All</option>
+            <option value="completed">Completed</option>
+            <option value="pending">Pending</option>
+            <option value="delivering">Delivering</option>
+            <option value="canceled">Canceled</option>
+            <option value="need-confirmation">Orders need to be confirmed</option>
           </Select>
         </Flex>
         <Box border="1px" borderColor="gray.300" borderRadius="md" overflow="hidden">
           <Table variant="simple" size="sm" borderCollapse="collapse" wordBreak="break-word">
             <Thead>
               <Tr>
-                <Th border="1px" borderColor="gray.300">ID</Th>
-                <Th border="1px" borderColor="gray.300">UserID</Th>
-                <Th border="1px" borderColor="gray.300">Hình ảnh</Th>
-                <Th border="1px" borderColor="gray.300">Sản phẩm</Th>
-                <Th border="1px" borderColor="gray.300">Ngày</Th>
-                <Th border="1px" borderColor="gray.300">Trạng thái</Th>
-                <Th border="1px" borderColor="gray.300">Số lượng</Th>
-                <Th border="1px" borderColor="gray.300">Giá</Th>
-                <Th border="1px" borderColor="gray.300">Tổng tiền</Th>
-                <Th border="1px" borderColor="gray.300">Hành động</Th>
+                <Th border="1px" borderColor="gray.300">No.</Th>
+                <Th border="1px" borderColor="gray.300">User ID</Th>
+                <Th border="1px" borderColor="gray.300">Order ID</Th>
+                <Th border="1px" borderColor="gray.300">Phone Number</Th>
+                <Th border="1px" borderColor="gray.300">Address</Th>
+                <Th border="1px" borderColor="gray.300">Date Order</Th>
+                <Th border="1px" borderColor="gray.300">Status</Th>
+                <Th border="1px" borderColor="gray.300">Total Amount</Th>
+                <Th border="1px" borderColor="gray.300">Action</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {filteredPurchases.map((purchase) => (
-                <React.Fragment key={purchase.id}>
-                  {purchase.orderItems.map((product, index) => (
-                    <Tr key={index}>
-                      {index === 0 && (
-                        <>
-                          <Td rowSpan={purchase.orderItems.length} border="1px" borderColor="gray.300">{orderIndex++}</Td>
-                          <Td rowSpan={purchase.orderItems.length} border="1px" borderColor="gray.300">{purchase.userid}</Td>
-                        </>
-                      )}
-                      <Td border="1px" borderColor="gray.300"><Image boxSize="50px" src={product.image} alt={product.name} /></Td>
-                      <Td border="1px" borderColor="gray.300">{product.name}</Td>
-                      {index === 0 && (
-                        <>
-                          <Td rowSpan={purchase.orderItems.length} border="1px" borderColor="gray.300">{purchase.dateOrder}</Td>
-                          <Td rowSpan={purchase.orderItems.length} border="1px" borderColor="gray.300">{purchase.status}</Td>
-                        </>
-                      )}
-                      <Td border="1px" borderColor="gray.300">{product.count}</Td>
-                      <Td border="1px" borderColor="gray.300">{product.promotion_price}</Td>
-                      {index === 0 && (
-                        <>
-                          <Td rowSpan={purchase.orderItems.length} border="1px" borderColor="gray.300">
-                            {purchase.amountFromUser}
-                          </Td>
-                          <Td rowSpan={purchase.orderItems.length} border="1px" borderColor="gray.300">
-                            <Button
-                              size="sm"
-                              colorScheme="blue"
-                              onClick={() => handleViewDetails(purchase)}
-                            >
-                              Xem chi tiết
-                            </Button>
-                          </Td>
-                        </>
-                      )}
-                    </Tr>
-                  ))}
-                </React.Fragment>
-              ))}
+              {filteredPurchases.length > 0 ? (
+                filteredPurchases.map((purchase, index) => (
+                  <Tr key={purchase.id}>
+                    <Td border="1px" borderColor="gray.300">{index + 1}</Td>
+                    <Td border="1px" borderColor="gray.300">{purchase.userid}</Td>
+                    <Td border="1px" borderColor="gray.300">{purchase.id}</Td>
+                    <Td border="1px" borderColor="gray.300">{purchase.phone}</Td>
+                    <Td border="1px" borderColor="gray.300" maxW="150px" isTruncated>
+                      {purchase.address}
+                    </Td>
+                    <Td border="1px" borderColor="gray.300">{new Date(purchase.date_order).toLocaleDateString()}</Td>
+                    <Td border="1px" borderColor="gray.300">{purchase.status}</Td>
+                    <Td border="1px" borderColor="gray.300">{purchase.amountFromUser}</Td>
+                    <Td border="1px" borderColor="gray.300">
+                      <Button size="sm" colorScheme="blue" onClick={() => handleViewDetails(purchase)}>
+                        View Details
+                      </Button>
+                    </Td>
+                  </Tr>
+                ))
+              ) : (
+                <Tr>
+                  <Td colSpan="8" textAlign="center" color="gray.500">
+                    No orders found for the status: <strong>{filter}</strong>
+                  </Td>
+                </Tr>
+              )}
             </Tbody>
           </Table>
+          <Box mt={4} display="flex" justifyContent="space-between" alignItems="center">
+            <Button
+              isDisabled={currentPage === 0}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+            >
+              Previous
+            </Button>
+            <Box>
+              Page {currentPage + 1} of {totalPages}
+            </Box>
+            <Button
+              isDisabled={currentPage === totalPages - 1}
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
+            >
+              Next
+            </Button>
+          </Box>
         </Box>
       </Box>
 
@@ -249,42 +268,47 @@ const PurchaseManagement = () => {
         <Modal isOpen={isOpen} onClose={onClose}>
           <ModalOverlay />
           <ModalContent>
-            <ModalHeader>Chi tiết đơn hàng</ModalHeader>
+            <ModalHeader>Order Details</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              <Text><strong>Họ:</strong> {selectedPurchase.firstname}</Text>
-              <Text><strong>Tên:</strong> {selectedPurchase.lastname}</Text>
+              <Text><strong>First Name:</strong> {selectedPurchase.firstname}</Text>
+              <Text><strong>Last Name:</strong> {selectedPurchase.lastname}</Text>
               <Text><strong>Email:</strong> {selectedPurchase.email}</Text>
-              <Text><strong>Tên đơn vị vận chuyển:</strong> {selectedPurchase.delivery_name}</Text>
-              <Text><strong>Giá giao hàng:</strong> {selectedPurchase.delivery_price}</Text>
-              <Text><strong>Địa chỉ:</strong> {selectedPurchase.address}</Text>
-              <Text><strong>Số điện thoại:</strong> {selectedPurchase.phone}</Text>
-              <Text><strong>Trạng thái:</strong> {selectedPurchase.status}</Text>
-              <Text><strong>Ngày đặt hàng:</strong> {new Date(selectedPurchase.dateOrder).toLocaleDateString()}</Text>
-              <Text><strong>Tổng tiền:</strong> {selectedPurchase.amountFromUser}</Text>
-              <Heading size="md" mt={4}>Sản phẩm:</Heading>
+              <Text><strong>Delivery Service Name:</strong> {selectedPurchase.delivery_name}</Text>
+              <Text><strong>Delivery Price:</strong> {selectedPurchase.delivery_price}</Text>
+              <Text><strong>Address:</strong> {selectedPurchase.address}</Text>
+              <Text><strong>Phone Number:</strong> {selectedPurchase.phone}</Text>
+              <Text><strong>Status:</strong> {selectedPurchase.status}</Text>
+              <Text><strong>Order Date:</strong> {new Date(selectedPurchase.date_order).toLocaleDateString()}</Text>
+              <Text><strong>Total Amount:</strong> {selectedPurchase.amountFromUser}</Text>
+              <Text><strong>Discount On Voucher: </strong> {selectedPurchase.discount_value_vouchers}</Text>
+              {filter === 'need-confirmation' && selectedPurchase.messageStatusPending && (
+              <Text color="red.500" mt={2}>
+                {selectedPurchase.messageStatusPending}
+              </Text>
+              )}
+              <Heading size="md" mt={4}>Products:</Heading>
               {selectedPurchase.orderItems.map((item, index) => (
                 <Box key={index} border="1px" borderColor="gray.300" p={2} mt={2}>
-                  <Text><strong>Tên sản phẩm:</strong> {item.name}</Text>
-                  <Text><strong>Số lượng:</strong> {item.count}</Text>
-                  <Text><strong>Giá khuyến mãi:</strong> {item.promotion_price}</Text>
-                  <Image boxSize="50px" src={item.image} alt={item.name} />
+                  <Text><strong>Product Name:</strong> {item.name}</Text>
+                  <Text><strong>Quantity:</strong> {item.count}</Text>
+                  <Text><strong>Promotional Price:</strong> {item.promotion_price}</Text>
+                  <Image src={item.image} alt={item.name} boxSize="100px" objectFit="cover" />
                 </Box>
               ))}
             </ModalBody>
-
             <ModalFooter>
               {selectedPurchase.status === 'pending' && (
                 <Button colorScheme="green" mr={3} onClick={() => handleConfirm(selectedPurchase.id)}>
-                  Xác nhận đơn hàng
+                  Confirm Order
                 </Button>
               )}
               {selectedPurchase.status === 'delivering' && (
-                <Button colorScheme="blue" mr={3} onClick={() => handleComplete(selectedPurchase.id)}>
-                  Hoàn thành đơn hàng
+                <Button colorScheme="teal" mr={3} onClick={() => handleComplete(selectedPurchase.id)}>
+                  Complete Order
                 </Button>
               )}
-              <Button variant="ghost" onClick={onClose}>Đóng</Button>
+              <Button onClick={onClose}>Close</Button>
             </ModalFooter>
           </ModalContent>
         </Modal>

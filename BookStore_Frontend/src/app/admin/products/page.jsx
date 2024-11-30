@@ -25,6 +25,8 @@ import {
   ModalCloseButton,
   useDisclosure,
   Text,
+  Flex,
+  Select,
 } from '@chakra-ui/react';
 import axios from 'axios';
 
@@ -218,19 +220,32 @@ const ProductManagement = () => {
   const [detailedProduct, setDetailedProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0); // Trang hiện tại
+  const [pageSize, setPageSize] = useState(5);
+  const [filter, setFilter] = useState("all");
+
   useEffect(() => {
     // Fetch products from backend API
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/product/getAllProduct');
-        setProducts(response.data); // Set products from API response
+        const response = await axios.get(`http://localhost:8080/api/product/getAllProductWithPaging`, {
+          params: {
+            page: currentPage,
+            size: pageSize,
+            filter: filter, // Chỉ thêm trạng thái nếu không phải "all"
+          },
+        });
+        const productsPage = response.data.data;
+        setProducts(productsPage); // Set products from API response
+        setTotalPages(productsPage[0].totalPages);
       } catch (error) {
         console.error('Error fetching products:', error);
       }
     };
 
     fetchProducts();
-  }, []);
+  }, [currentPage, pageSize, filter]);
 
   const handleDelete = async (id) => {
     try {
@@ -285,17 +300,37 @@ const ProductManagement = () => {
       (product.category_name?.toLowerCase() ?? '').includes(searchTerm.toLowerCase())
     );
   });
-
   return (
     <Container maxW="container.xl" py={4}>
-      <Heading size="lg" mb={4}>Quản lý sản phẩm</Heading>
-      <HStack spacing={4} mb={4}>
-        <Input
-          placeholder="Tìm kiếm theo tên hoặc danh mục"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </HStack>
+      <Heading as="h1" size="xl" mb={4} textAlign="center" color="teal.600">Quản lý sản phẩm</Heading>
+      <Flex  justifyContent="space-between"  gap={4} flexWrap="wrap">
+        <HStack mb={4}>
+          <Input
+            placeholder="Tìm kiếm theo tên hoặc danh mục"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            mr={4} /* Thêm margin phải để tạo khoảng cách với Select */
+          />
+          <Select
+            value={filter}
+            onChange={(e) => {
+              setFilter(e.target.value);
+              setCurrentPage(0);
+            }}
+            w="400px" /* Điều chỉnh độ rộng Select */
+            borderColor="teal.400"
+          >
+            <option value="all">All</option>
+            <option value="leastQuantityProducts">Products with Least Quantity</option>
+            <option value="mostSellingProducts">Most Selling Products</option>
+            <option value="leastSellingProducts">Least Selling Products</option>
+            <option value="mostRatingProducts">Most Rating Products</option>
+            <option value="leastRatingProducts">Least Selling Products</option>
+          </Select>
+        </HStack>
+      </Flex>
+
+
       <Button colorScheme="teal" onClick={handleAddProduct}>
         Thêm sản phẩm
       </Button>
@@ -305,6 +340,23 @@ const ProductManagement = () => {
         onDelete={handleDelete}
         onViewDetails={handleViewDetails}
       />
+      <Box mt={4} display="flex" justifyContent="space-between" alignItems="center">
+        <Button
+          isDisabled={currentPage === 0}
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+        >
+          Previous
+        </Button>
+        <Box>
+          Page {currentPage + 1} of {totalPages}
+        </Box>
+        <Button
+          isDisabled={currentPage === totalPages - 1}
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
+        >
+          Next
+        </Button>
+      </Box>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>

@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState } from 'react';
 export const FilterContext = React.createContext();
 // Create a provider component
 export const FilterProvider = ({ children }) => {
-    const [filter, setFilter] = useState('all');
+    const [filter, setFilter] = useState('pending');
     return (
         <FilterContext.Provider value={[filter, setFilter]}>
             {children}

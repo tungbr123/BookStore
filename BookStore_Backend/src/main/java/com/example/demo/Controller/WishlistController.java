@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.Entity.User_Follow_Product;
-import com.example.demo.Service.UserService;
 import com.example.demo.Service.WishlistService;
 import com.example.demo.model.request.Auth.RegisterRequest;
 

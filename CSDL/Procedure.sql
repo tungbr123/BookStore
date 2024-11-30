@@ -43,49 +43,42 @@ CREATE PROCEDURE sp_AddUser
     @email VARCHAR(255),
     @phone VARCHAR(20),
 	@password varchar(255),
-    @role INT,
     @address VARCHAR(200),
     @avatar VARCHAR(255),
-    @cover VARCHAR(255)
+	@is_Email_Active bit,
+    @cover VARCHAR(255),
+	@status bit
 AS
 BEGIN
-    INSERT INTO [User] (firstname, lastname, CMND, email, phone, hashed_password, [role], [address], avatar, cover)
-    VALUES (@firstname, @lastname, @CMND, @email, @phone, @password, @role, @address, @avatar, @cover)
+    INSERT INTO [_User] (firstname, lastname, CMND, email, phone, hashed_password, avatar, cover, [status], is_Email_Active)
+    VALUES (@firstname, @lastname, @CMND, @email, @phone, @password, @avatar, @cover, 1,@is_Email_Active)
 END;
 --Xóa người dùng mới
 CREATE PROCEDURE sp_DeleteUser
     @userId INT
 AS
 BEGIN
-    DELETE FROM [User]
+    DELETE FROM [_User]
     WHERE id = @userId
 END;
 --Sửa thông tin người dùng
-CREATE PROCEDURE sp_UpdateUser
+CREATE PROCEDURE updateUser
     @userId INT,
     @firstname VARCHAR(32),
     @lastname VARCHAR(32),
     @CMND VARCHAR(20),
     @email VARCHAR(255),
     @phone VARCHAR(20),
-	@password varchar(255),
-    @role INT,
-    @address VARCHAR(200),
-    @avatar VARCHAR(255),
-    @cover VARCHAR(255)
+    @avatar VARCHAR(255)
 AS
 BEGIN
-    UPDATE [User]
+    UPDATE [_User]
     SET firstname = @firstname,
         lastname = @lastname,
         CMND = @CMND,
         email = @email,
         phone = @phone,
-		hashed_password=@password,
-        [role] = @role,
-        [address] = @address,
-        avatar = @avatar,
-        cover = @cover
+        avatar = @avatar
     WHERE id = @userId
 END;
 

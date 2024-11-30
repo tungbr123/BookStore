@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,11 +57,36 @@ public class OrderController {
     public ResponseEntity<?> getAllOrders() {
         return new ResponseEntity<>(orderService.getAllOrders(), HttpStatus.OK);
     }
+    @GetMapping("/getOrdersWithPaging")
+    public ResponseEntity<Page<Orders>> getOrdersWithPaging(
+    		@RequestParam Long userid,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<Orders> orders = orderService.getOrdersByUserId(userid, page, size);
+        return ResponseEntity.ok(orders);
+    }
+    @GetMapping("/getOrdersWithPagingByStatus")
+    public ResponseEntity<?> getOrdersWithPagingByStatus(
+        @RequestParam Long userid,
+        @RequestParam(required = false) String status,
+        @RequestParam int page,
+        @RequestParam int size
+    ) {
+    	return new ResponseEntity<>(orderService.getOrdersByUserIdAndStatus(userid, status, page, size), HttpStatus.OK);
+    }
+    @GetMapping("/getAllOrdersWithPagingByStatus")
+    public ResponseEntity<?> getAllOrdersWithPagingByStatus(
+        @RequestParam(required = false) String status,
+        @RequestParam int page,
+        @RequestParam int size
+    ) {
+    	return new ResponseEntity<>(orderService.getAllOrdersByUserIdAndStatus( status, page, size), HttpStatus.OK);
+    }
     @PutMapping("/cancel/{orderId}")
     public ResponseEntity<?> cancelOrder(@PathVariable Long orderId) {
     	return new ResponseEntity<>(orderService.cancelOrderByOrderId(orderId), HttpStatus.OK);
     }
-    @PutMapping("/confirm/{id}")
+    @PutMapping("/confirm/{id}") 
     public ResponseEntity<?> confirmOrder(@PathVariable Long id) {
         return new ResponseEntity<>(orderService.updateOrderStatusToDelivering(id), HttpStatus.OK);
     }

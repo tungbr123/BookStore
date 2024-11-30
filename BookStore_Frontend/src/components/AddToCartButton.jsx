@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import showToast from '@/hooks/useToast';
 import { AppConText } from '@/context/AppContext';
 import api from '@/ApiProcess/api';
+import { useCart } from '@/CartContext';
 
 
 // interface IAddToCartButtonProps {
@@ -17,14 +18,13 @@ import api from '@/ApiProcess/api';
 // }
 export const AddToCartButton = ({ product, count }) => {
   const { addItem, removeItem, isAdded } = useContext(AppConText);
+  const {cart, setCart, updateItemCount} = useCart();
   const loggedUser = useSelector((state) => state.auth)
-  const router = useRouter()
+  const router = useRouter();
+
   const handleAddToCart = async () => {
     if (loggedUser.token) {
-      // showToast(loggedUser.userid)
-      // addItem('cart', product, count)
       try {
-        // Gọi API đăng nhập bên client
         const responseCart = await api.get(`getCartID?userid=${loggedUser.userid}`, {
         }, {
           headers: {
@@ -33,27 +33,19 @@ export const AddToCartButton = ({ product, count }) => {
         });
         if (responseCart.status == 200) {
           const data = await responseCart.data
-          var cartid = data.data
-          // showToast("Lấy ID cart thành công")
+          var cartid= data.data;
         }
-        // showToast(product.id)
-        // showToast(count)
         const responseAddToCart = await api.post('cartItem', {
           cartid: cartid,
           productid: product.id,
-          count: count
+          count: countn
         }, {
           headers: {
             'Content-Type': 'application/json',
           },
         });
-
-
         if (responseCart.status === 200) {
-          // console.log(data.data?.user);
-          // localStorage.setItem('user', JSON.stringify(data.data?.user));
           showToast('Đã thêm vào giỏ hàng thành công');
-          // return true;
         } else {
           const message = 'Thêm giỏ hàng thất bại';
           showToast(message, 1);
@@ -63,11 +55,11 @@ export const AddToCartButton = ({ product, count }) => {
 
         const message = 'Đã xảy ra lỗi, vui lòng thử lại';
         showToast(message, 1);
-        // return false;
       }
     }
     else
       router.push('signin')
+
   }
   return (
     <>

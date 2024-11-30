@@ -9,12 +9,13 @@ import {
   Stack,
   Text,
   useDisclosure,
+  useToast, 
 } from '@chakra-ui/react';
 import { getSubstring } from '@/helpers';
 import { ICategory, IProduct } from '@/model';
 import Link from 'next/link';
 
-
+import axios from 'axios';
 import { Rating } from './Rating';
 import { AddToCartButton } from './AddToCartButton';
 import { BuyNowButton } from './BuyNowButton';
@@ -47,7 +48,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const quantity1 = 1;
   const [check, setCheck] = useCheckOut()
-  const router= useRouter()
+  const router= useRouter();
+  const toast = useToast();
   const product1 : ProductBuyNow = 
     {
       productid: product.id,
@@ -66,6 +68,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     setCheck([product1])
     router.push('checkout')
   }
+    // Handler function for Claim Voucher button
+ 
   return (
     <Card w="xs" pos="relative" m="0.5rem">
       <AddToWishlistButton product={product} />
@@ -84,8 +88,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               <Heading size="sm">{getSubstring(product.name, 20)}</Heading>
             </Link>
             <Flex color="brand.primaryDark" fontWeight="bold">
-              <Text fontSize="sm">$ </Text>
               <Text fontSize="lg">{product.price}</Text>
+              <Text fontSize="sm">đ</Text>
             </Flex>
           </Flex>
           <Text fontSize="sm"> {getSubstring(product.description, 30)} </Text>

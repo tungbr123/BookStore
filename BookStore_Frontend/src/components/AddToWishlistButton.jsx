@@ -16,8 +16,6 @@ export const AddToWishlistButton = ({ product }) => {
   const router = useRouter()
   const handleAddToWishlist = async () => {
     if (loggedUser.token) {
-      // showToast(loggedUser.userid)
-      // addItem('cart', product, count)
       try {
         const response = await api.post('addToWishlist', {
           userid: loggedUser.userid,
@@ -30,10 +28,7 @@ export const AddToWishlistButton = ({ product }) => {
 
 
         if (response.status === 200) {
-          // console.log(data.data?.user);
-          // localStorage.setItem('user', JSON.stringify(data.data?.user));
           showToast('Đã thêm vào yêu thích thành công');
-          // return true;
         } else {
           const message = 'Thêm thất bại';
           showToast(message, 1);

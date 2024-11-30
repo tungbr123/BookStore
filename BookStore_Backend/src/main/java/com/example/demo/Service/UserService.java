@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.Entity._User;
 import com.example.demo.model.request.User.UpdateUserRequest;
+import com.example.demo.model.response.ApiResponse;
 
 
 @Service
@@ -29,4 +30,6 @@ public interface UserService {
     _User updateUser(Long id, UpdateUserRequest updateUser);
     _User toggleUserStatus(Long id);
 //    ApiResponse<Object> addUser(AddUserRequest request);
+
+	ApiResponse<Object> getAllUsersWithPaging(int page, int size);
 }

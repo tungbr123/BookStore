@@ -15,5 +15,6 @@ public class OrderRequest {
 	private String address;
 	private Long money_from_user;
 	private String email;
+	private int is_paid_before;
 	private String name;
 }

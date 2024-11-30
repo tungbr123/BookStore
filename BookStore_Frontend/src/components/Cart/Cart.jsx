@@ -38,9 +38,10 @@ export const Cart = () => {
   // } = useContext(AppConText);
   const router = useRouter()
   const loggedUser = useSelector((state) => state.auth);
-  const {cart, setCart, updateItemCount} = useCart();
+  const {cart, setCart, updateItemCount } = useCart();
   const [check, setCheck] = useCheckOut();
   const [address, setAddress] = useState([])
+
   // useEffect(()=>{
   //   setCheck(1)
   //   showToast(check)
@@ -60,10 +61,7 @@ export const Cart = () => {
           if (response.status === 200) {
             const data = response.data.data
             if (Array.isArray(data)) {
-              // showToast("Đã lấy cartitem thành công");
               setCart(data); // Assuming you have a setCart function
-              // setCheck(data)
-              // setCheck(data)
             }
             else
               console.log(data)
@@ -80,10 +78,11 @@ export const Cart = () => {
       }
       fetchCartItems();
     }
-  }, [loggedUser.userid, cart, setCart]); // Add setCart to the dependency array
+  }, [cart]); // Add setCart to the dependency array
 
   const handleCheckout = async() => {
     setCheck(cart)
+    onClose();
     router.push("/checkout")
   };
   const handleClearCart = async () => {

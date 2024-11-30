@@ -22,4 +22,5 @@ public class ProductResponse {
 	private String image;
 	private String category_name;
 	private float rating;
+	private int totalPages;
 }

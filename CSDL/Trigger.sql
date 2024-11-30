@@ -47,8 +47,8 @@ AFTER UPDATE
 AS
 BEGIN
     UPDATE Orders
-    SET status = 'not processed'
-    WHERE status NOT IN ('not processed', 'in process', 'delivered')
+    SET status = 'pending'
+    WHERE status NOT IN ('pending', 'delivering', 'completed', 'canceled')
 END;
 
 
@@ -93,13 +93,13 @@ END;
 
 --2 Kiểm tra tính duy nhất của mail người dùng khi mới thêm vào
 CREATE TRIGGER trg_CheckUniqueEmail
-ON [User]
+ON [_User]
 AFTER INSERT, UPDATE
 AS
 BEGIN
     SET NOCOUNT ON;
     -- Kiểm tra sự duy nhất của email trong bảng User
-    IF EXISTS (SELECT 1 FROM [User] u INNER JOIN inserted i ON u.email = i.email WHERE u.id <> i.id)
+    IF EXISTS (SELECT 1 FROM [_User] u INNER JOIN inserted i ON u.email = i.email WHERE u.id <> i.id)
     BEGIN
         -- Nếu tồn tại email trùng lặp, rollback và thông báo lỗi
         RAISERROR('Email must be unique.', 16, 1);
@@ -108,21 +108,21 @@ BEGIN
 END
 --3 Đặt giá trị mặc định cho cột role là 1
 CREATE TRIGGER trg_SetDefaultValues
-ON [User]
+ON [_User]
 AFTER INSERT
 AS
 BEGIN
     SET NOCOUNT ON;
 
     -- Thiết lập giá trị mặc định cho các cột
-    UPDATE [User]
-    SET role = 1
+    UPDATE [_User]
+    SET role = 2
     WHERE id IN (SELECT id FROM inserted)
 END;
 
 --Product
 --1 Xóa các product có liên quan đến bảng cartitem,orderitem,review,userfollowproduct
-CREATE TRIGGER trg_DeleteRelatedData
+ALTER TRIGGER trg_DeleteRelatedData
 ON Product
 INSTEAD OF DELETE
 AS
@@ -142,7 +142,7 @@ BEGIN
     WHERE productId IN (SELECT id FROM deleted);
 
     -- Xóa các sản phẩm liên quan từ bảng UserFollowProduct
-    DELETE FROM UserFollowProduct
+    DELETE FROM User_Follow_Product
     WHERE productId IN (SELECT id FROM deleted);
 
 	DELETE FROM Product
@@ -151,7 +151,7 @@ END;
 
 --CartItem
 --1 Cập nhật lại số lượng và tổng trị giá của giỏ hàng khi một đơn hàng bị hủy
-CREATE TRIGGER trg_UpdateCart
+ALTER TRIGGER trg_UpdateCart
 ON CartItem
 AFTER INSERT, DELETE, UPDATE
 AS
@@ -168,8 +168,8 @@ BEGIN
     END
 
     UPDATE Cart
-    SET totalQuantity = (SELECT SUM(count) FROM CartItem WHERE cartId = @cartId),
-        totalPrice = (SELECT SUM(count * price) FROM CartItem ci INNER JOIN Product p ON ci.productId = p.id WHERE ci.cartId = @cartId)
+    SET total_quantity = (SELECT SUM(count) FROM CartItem WHERE cartId = @cartId),
+        total_price = (SELECT SUM(count * price) FROM CartItem ci INNER JOIN Product p ON ci.productId = p.id WHERE ci.cartId = @cartId)
     WHERE id = @cartId
 END;
 
@@ -220,8 +220,83 @@ BEGIN
     END
 END;
 
+--Thêm User và Vai trò trong bảng UserRole khi một người dùng mới được thêm vào
+CREATE TRIGGER [dbo].[trg_UserRole]
+ON [dbo].[_User]
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
 
+    -- Thêm dữ liệu vào bảng UserRole từ bảng _User mới được insert
+    INSERT INTO UserRole (userID, roleID)
+    SELECT id, role
+    FROM inserted
+END;
 
+--Tạo Cart cho người dùng mới
+CREATE TRIGGER [dbo].[trg_CreateCartAfterUserInsert]
+ON [dbo].[_User]
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO Cart(userId, total_price, total_quantity)
+    SELECT i.id, 0, 0
+    FROM inserted i;
+END;
+
+--trigger tự động cập nhật trạng thái mỗi ngày của voucher
+CREATE TRIGGER trg_update_voucher_status_on_today_date_change
+ON User_Voucher
+AFTER UPDATE, INSERT
+AS
+BEGIN
+	UPDATE uv
+		SET uv.status = CASE 
+						  WHEN uv.usage_count >= 1 THEN 'used'
+						  WHEN uv.today_date <= v.end_date THEN 'active'
+						  ELSE 'expired'
+						END
+		FROM User_Voucher uv
+		JOIN Voucher v ON uv.voucher_id = v.id;
+END;
+
+--trigger tự động giảm voucher đi một khi có một đơn hàng thanh toán có voucher
+CREATE TRIGGER trg_decrement_voucher_quantity
+ON Order_Voucher
+AFTER INSERT
+AS
+BEGIN
+    UPDATE Voucher
+    SET usage_limit = usage_limit - 1
+    FROM Voucher v
+    JOIN inserted i ON v.id = i.voucher_id
+    WHERE v.usage_limit > 0; -- Đảm bảo chỉ giảm khi còn số lượng voucher
+
+    -- Optional: Thông báo nếu số lượng voucher đã hết
+    IF EXISTS (SELECT * FROM Voucher WHERE usage_limit < 0)
+    BEGIN
+        RAISERROR ('Voucher quantity cannot be less than 0', 16, 1);
+        ROLLBACK;
+    END
+END;
+
+--update số lượng dùng voucher của người dùng khi có order được add vào db
+CREATE TRIGGER trg_update_usage_count_after_order
+ON Order_Voucher
+AFTER INSERT
+AS
+BEGIN
+    -- Tăng usage_count trong User_Voucher khi có một đơn hàng mới
+    UPDATE uv
+    SET uv.usage_count = uv.usage_count + 1
+    FROM User_Voucher uv
+    INNER JOIN Inserted i ON uv.voucher_id = i.voucher_id
+                         AND uv.user_id = i.userid;
+END;
+GO
 
 
 

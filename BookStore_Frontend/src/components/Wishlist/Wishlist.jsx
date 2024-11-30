@@ -37,7 +37,7 @@ export const Wishlist = () => {
           });
           if (response.status === 200) {
             const data = response.data.data
-            if (Array.isArray(data)) {
+            if (Array.isArray(data) ) {
               setWishlist(data); // Assuming you have a setCart function
             }
             else
@@ -45,17 +45,15 @@ export const Wishlist = () => {
 
           } else {
             showToast("Lấy thất bại");
-            setWishlist([])
           }
         } catch (error) {
           showToast("Lỗi khi lấy Wishlistitem");
           console.error("Error fetching cart items", error);
-          setWishlist([])
         };
       }
       fetchWishlistitem();
     }
-  }, [loggedUser.userid, wishlist, setWishlist]);
+  }, [wishlist]);
 
   const handleClearWishlist = async () => {
     try {

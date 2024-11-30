@@ -11,7 +11,6 @@ export const ReviewItems = () => {
     //     state: { checkout },
     // } = useContext(AppConText)
     const [checkout,setCheckout]  = useCheckOut();
-    console.log(checkout)
     return (
         <Card borderWidth="1px" borderColor="gray.200" shadow="none">
             <CardHeader>

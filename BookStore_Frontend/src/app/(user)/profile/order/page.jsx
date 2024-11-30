@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -26,49 +26,54 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
-  Textarea,
-  useDisclosure,
   Image,
-  FormControl,
-  FormLabel,
-  RadioGroup,
-  HStack,
-  Radio,
-} from '@chakra-ui/react';
-import { SearchIcon } from '@chakra-ui/icons';
-import axios from 'axios';
-import { useSelector } from 'react-redux';
-import showToast from '@/hooks/useToast';
+  useDisclosure,
+  Text,
+} from "@chakra-ui/react";
+import { SearchIcon } from "@chakra-ui/icons";
+import axios from "axios";
+import { useSelector } from "react-redux";
 
 const PurchaseHistory = () => {
   const [purchases, setPurchases] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState('all');
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [reviewContent, setReviewContent] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState("pending"); // Default filter is pending
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [reviewContent, setReviewContent] = useState("");
   const [rating, setRating] = useState(5);
+  const [currentProduct, setCurrentProduct] = useState(null); // Store current product for review
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const loggedUser = useSelector((state) => state.auth);
 
+  const loggedUser = useSelector((state) => state.auth);
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0); // Trang hiện tại
+  const [pageSize, setPageSize] = useState(10); // Số đơn hàng trên mỗi trang
   useEffect(() => {
     const fetchPurchases = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/getOrdersByUserId', {
-          params: { userid: loggedUser.userid },
+        const response = await axios.get(`http://localhost:8080/getOrdersWithPagingByStatus`, {
+          params: {
+            userid: loggedUser.userid,
+            page: currentPage,
+            size: pageSize,
+            status: filter, // Chỉ thêm trạng thái nếu không phải "all"
+          },
         });
-        const orders = response.data.data; // Assuming your API response structure
-        setPurchases(orders);
+        console.log(response)
+        const ordersPage = response.data.data;
+        setPurchases(ordersPage);
+        setTotalPages(ordersPage[0].totalPages);
+
       } catch (error) {
-        console.error('Failed to fetch purchases:', error);
+        console.error("Failed to fetch purchases:", error);
       }
     };
-
     fetchPurchases();
-  }, []);
+  }, [loggedUser.userid, filter, currentPage, pageSize]); // Refetch khi các state này thay đổi
 
-  const handleReview = (product) => {
-    setSelectedProduct(product);
+  const handleViewDetails = (order) => {
+    setSelectedOrder(order);
     onOpen();
   };
 
@@ -77,222 +82,274 @@ const PurchaseHistory = () => {
       const response = await axios.put(`http://localhost:8080/cancel/${id}`);
       if (response.data.statusCode === "200") {
         toast({
-          title: 'Hủy đơn hàng',
-          description: `Hủy đơn hàng thành công.`,
-          status: 'success',
+          title: "Cancel Order",
+          description: `Order has been successfully canceled.`,
+          status: "success",
           duration: 3000,
           isClosable: true,
         });
-        setPurchases(prevPurchases => 
-          prevPurchases.map(purchase =>
-            purchase.id === id ? { ...purchase, status: 'canceled' } : purchase
+        setPurchases((prevPurchases) =>
+          prevPurchases.map((purchase) =>
+            purchase.id === id ? { ...purchase, status: "canceled" } : purchase
           )
         );
       } else {
         toast({
-          title: 'Hủy đơn hàng thất bại',
+          title: "Failed to Cancel Order",
           description: response.data.message,
-          status: 'error',
+          status: "error",
           duration: 3000,
           isClosable: true,
         });
       }
     } catch (error) {
-      console.error('Failed to cancel order:', error);
+      console.error("Failed to cancel order:", error);
       toast({
-        title: 'Hủy đơn hàng thất bại',
-        description: 'Đã xảy ra lỗi trong quá trình hủy đơn hàng.',
-        status: 'error',
+        title: "Failed to Cancel Order",
+        description: "An error occurred while canceling the order.",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
     }
   };
 
+  const handleOpenReview = (item) => {
+    setCurrentProduct(item); // Chọn sản phẩm để đánh giá
+    onOpen(); // Mở modal đánh giá
+  };
+
   const handleSubmitReview = async () => {
     try {
-
-      const response = await axios.post('http://localhost:8080/addReview', {
-        productid: selectedProduct.productid,
-        userid: loggedUser.userid, 
+      const response = await axios.post("http://localhost:8080/addReview", {
+        productid: currentProduct.productid,
+        userid: loggedUser.userid,
         stars: rating,
         content: reviewContent,
       });
       if (response.data.statusCode === "200") {
         toast({
-          title: 'Đánh giá sản phẩm',
-          description: `Bạn đã đánh giá sản phẩm ${selectedProduct.name}.`,
-          status: 'success',
+          title: "Product Review",
+          description: `You have reviewed the product ${currentProduct.name}.`,
+          status: "success",
           duration: 3000,
           isClosable: true,
         });
-        setReviewContent('');
+        setReviewContent("");
         setRating(5);
-        onClose();
+        setCurrentProduct(null); // Reset current product after review
       } else {
         toast({
-          title: 'Đánh giá sản phẩm thất bại',
+          title: "Failed to Review Product",
           description: response.data.message,
-          status: 'error',
+          status: "error",
           duration: 3000,
           isClosable: true,
         });
       }
     } catch (error) {
-      console.error('Failed to submit review:', error);
+      console.error("Failed to submit review:", error);
       toast({
-        title: 'Đánh giá sản phẩm thất bại',
-        description: 'Đã xảy ra lỗi trong quá trình đánh giá sản phẩm.',
-        status: 'error',
+        title: "Failed to Review Product",
+        description: "An error occurred while reviewing the product.",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
     }
   };
 
-  const filteredPurchases = purchases.filter(purchase => {
-    if (filter !== 'all' && purchase.status !== filter) {
+  const filteredPurchases = (purchases || []).filter((purchase) => {
+    if (filter !== "all" && purchase.status !== filter) {
       return false;
     }
-    return purchase.orderItems.some(product =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    return purchase.id.toString().includes(searchTerm);
   });
-
-  let orderIndex = 1; // Initialize the order index
-
   return (
     <Container maxW="container.xl" py={4}>
       <Box mb={4}>
-        <Heading size="lg" mb={4}>Lịch sử Mua Hàng</Heading>
+        <Heading size="lg" mb={4}>
+          Purchase History
+        </Heading>
         <Flex mb={4}>
           <InputGroup mr={4}>
             <Input
-              placeholder="Tìm kiếm..."
+              placeholder="Search by Order ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <InputRightElement>
               <IconButton
-                aria-label="Tìm kiếm"
+                aria-label="Search"
                 icon={<SearchIcon />}
-                onClick={() => {}}
+                onClick={() => { }}
               />
             </InputRightElement>
           </InputGroup>
           <Select
-            placeholder="Lọc theo trạng thái"
             value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+            onChange={(e) => {
+              setFilter(e.target.value);
+              setCurrentPage(0); // Reset trang khi thay đổi filter
+            }}
           >
-            <option value="all">Tất cả</option>
-            <option value="completed">Hoàn thành</option>
-            <option value="pending">Đang chờ</option>
-            <option value="delivering">Đang giao</option>
-            <option value="canceled">Đã hủy</option>
+            <option value="all">All</option>
+            <option value="completed">Completed</option>
+            <option value="pending">Pending</option>
+            <option value="delivering">Delivering</option>
+            <option value="canceled">Canceled</option>
           </Select>
         </Flex>
         <Table variant="simple">
           <Thead>
             <Tr>
-              <Th>ID</Th>
-              <Th>Hình ảnh</Th>
-              <Th>Sản phẩm</Th>
-              <Th>Ngày</Th>
-              <Th>Trạng thái</Th>
-              <Th>Số lượng</Th>
-              <Th>Giá</Th>
-              <Th>Tổng tiền</Th>
-              <Th>Hành động</Th>
+              <Th>No</Th>
+              <Th>Order ID</Th>
+              <Th>Order Date</Th>
+              <Th>Status</Th>
+              <Th>Phone</Th>
+              <Th>Delivery Address</Th>
+              <Th>Total Amount</Th>
+              <Th>Actions</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {filteredPurchases.map((purchase) => (
-              <React.Fragment key={purchase.id}>
-                {purchase.orderItems.map((product, index) => (
-                  <Tr key={index}>
-                    {index === 0 && (
-                      <Td rowSpan={purchase.orderItems.length}>{orderIndex++}</Td>
-                    )}
-                    <Td><Image boxSize="50px" src={product.image} alt={product.name} /></Td>
-                    <Td>{product.name}</Td>
-                    {index === 0 && (
-                      <>
-                        <Td rowSpan={purchase.orderItems.length}>{purchase.dateOrder}</Td>
-                        <Td rowSpan={purchase.orderItems.length}>{purchase.status}</Td>
-                      </>
-                    )}
-                    <Td>{product.count}</Td>
-                    <Td>{product.promotion_price}</Td>
-                    {index === 0 && (
-                      <Td rowSpan={purchase.orderItems.length}>
-                        {purchase.amountFromUser}
-                      </Td>
-                    )}
-                    {index === 0 && (
-                      <Td rowSpan={purchase.orderItems.length}>
-                        {purchase.status ===  'pending' && (
-                          <Button
-                            size="sm"
-                            colorScheme="red"
-                            onClick={() => handleCancel(purchase.id)}
-                          >
-                            Hủy đơn hàng
-                          </Button>
-                        )}
-                        {purchase.status === 'completed' && (
-                          <Button
-                            size="sm"
-                            colorScheme="blue"
-                            onClick={() => handleReview(product)}
-                            mr={2}
-                          >
-                            Đánh giá
-                          </Button>
-                        )}
-                      </Td>
-                    )}
-                  </Tr>
-                ))}
-              </React.Fragment>
-            ))}
+            {filteredPurchases.length > 0 ? (
+              filteredPurchases.map((purchase, index) => (
+                <Tr key={purchase.id} border="2px solid #3182ce">
+                  <Td>{index + 1 + currentPage * pageSize}</Td>
+                  <Td>{purchase.id}</Td>
+                  <Td>{purchase.date_order}</Td>
+                  <Td>{purchase.status}</Td>
+                  <Td>{purchase.phone}</Td>
+                  <Td>{purchase.address}</Td>
+                  <Td>{purchase.amountFromUser}</Td>
+                  <Td>
+                    <Flex>
+                      <Button size="sm" onClick={() => handleViewDetails(purchase)}>
+                        View Details
+                      </Button>
+                      {purchase.status === "pending" && (
+                        <Button
+                          size="sm"
+                          colorScheme="red"
+                          onClick={() => handleCancel(purchase.id)}
+                          ml={2}
+                        >
+                          Cancel
+                        </Button>
+                      )}
+                    </Flex>
+                  </Td>
+                </Tr>
+              ))
+            ) : (
+              <Tr>
+                <Td colSpan="8" textAlign="center" color="gray.500">
+                  No orders found for the status: <strong>{filter}</strong>
+                </Td>
+              </Tr>
+            )}
           </Tbody>
         </Table>
+
+        <Box mt={4} display="flex" justifyContent="space-between" alignItems="center">
+          <Button
+            isDisabled={currentPage === 0}
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+          >
+            Previous
+          </Button>
+          <Box>
+            Page {currentPage + 1} of {totalPages}
+          </Box>
+          <Button
+            isDisabled={currentPage === totalPages - 1}
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
+          >
+            Next
+          </Button>
+        </Box>
       </Box>
 
-      <Modal isOpen={isOpen} onClose={onClose}>
+      {/* Modal for viewing order details */}
+      {selectedOrder && (
+        <Modal isOpen={isOpen} onClose={onClose}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Order Details (Order ID: {selectedOrder.id})</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              {selectedOrder.orderItems &&
+                selectedOrder.orderItems.map((item, index) => (
+                  <Flex key={index} mb={4} align="center">
+                    <Image boxSize="50px" src={item.image} alt={item.name} />
+                    <Box ml={4}>
+                      <p>{item.name}</p>
+                      <p>Quantity: {item.count}</p>
+                      <p style={{ color: "green", fontSize: "0.9rem" }}>
+                        Discount On Vouchers:{" "}
+                        {selectedOrder.discount_value_vouchers}
+                      </p>
+                    </Box>
+                    {/* Show 'Review' button only if order status is 'completed' */}
+                    {selectedOrder.status === "completed" && (
+                      <Button
+                        size="sm"
+                        colorScheme="blue"
+                        ml={4}
+                        onClick={() => handleOpenReview(item)}
+                      >
+                        Review
+                      </Button>
+                    )}
+                  </Flex>
+
+                ))}
+            </ModalBody>
+            <ModalFooter>
+              <Button variant="ghost" onClick={onClose}>
+                Close
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      )}
+
+      {/* Review modal */}
+      <Modal isOpen={isOpen && currentProduct} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Đánh giá sản phẩm {selectedProduct?.name}</ModalHeader>
+          <ModalHeader>Review Product: {currentProduct?.name}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <FormControl>
-              <FormLabel>Số sao</FormLabel>
-              <RadioGroup onChange={setRating} value={rating}>
-                <HStack spacing="24px">
-                  <Radio value={1}>1</Radio>
-                  <Radio value={2}>2</Radio>
-                  <Radio value={3}>3</Radio>
-                  <Radio value={4}>4</Radio>
-                  <Radio value={5}>5</Radio>
-                </HStack>
-              </RadioGroup>
-            </FormControl>
-            <FormControl mt={4}>
-              <FormLabel>Nội dung đánh giá</FormLabel>
-              <Textarea
+            <Flex direction="column">
+              <Input
+                placeholder="Write your review..."
                 value={reviewContent}
                 onChange={(e) => setReviewContent(e.target.value)}
-                placeholder="Viết đánh giá của bạn..."
-                rows={6}
+                mb={3}
               />
-            </FormControl>
+              <Select
+                value={rating}
+                onChange={(e) => setRating(Number(e.target.value))}
+                mb={3}
+              >
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <option key={star} value={star}>
+                    {star} Star{star > 1 ? "s" : ""}
+                  </option>
+                ))}
+              </Select>
+            </Flex>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={handleSubmitReview}>
-              Gửi đánh giá
+            <Button colorScheme="blue" onClick={handleSubmitReview}>
+              Submit Review
             </Button>
-            <Button variant="ghost" onClick={onClose}>Hủy</Button>
+            <Button variant="ghost" onClick={onClose} ml={3}>
+              Close
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

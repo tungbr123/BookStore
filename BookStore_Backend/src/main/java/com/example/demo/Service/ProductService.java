@@ -7,12 +7,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Entity.Product;
+import com.example.demo.model.response.ApiResponse;
 import com.example.demo.model.response.ProductResponse;
 
 @Service
 public interface ProductService {
 
-	public List<ProductResponse> getAllProduct();
+	public ApiResponse<Object> getAllProduct();
 
 	public Product addProduct(Product product);
 	
@@ -34,4 +35,6 @@ public interface ProductService {
     Page<Product> findAll(Pageable pageable);
     
     Page<Product> getAllProducts(Integer page, Integer size, Long categoryId, String search);
+
+	public Object getAllProductWithPaging(String filter, int size, int page);
 }

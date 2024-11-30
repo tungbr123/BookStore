@@ -44,7 +44,7 @@ export default function Home() {
   const handleSubmit = async () => {
     const loginAuth = await dispatch(loginClient(email, password));
     if(loginAuth == 1){
-      router.push('/admin')
+      router.push('/admin/orders')
       toast({
         title: 'Đăng nhập thành công',
         description: `Đăng nhập thành công.`,

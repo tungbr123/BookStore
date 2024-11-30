@@ -11,6 +11,7 @@ import { Cart } from "../Cart/Cart";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from '@/ApiProcess/ApiFunction/AuthFunction';
+import showToast from '@/hooks/useToast';
 
 export function DesktopNav() {
     const { isOpen, onToggle } = useDisclosure();
@@ -20,7 +21,6 @@ export function DesktopNav() {
     useEffect(() => {
         setIsClient(true);
     }, []);
-
     return (
         <Flex  {...desktopNavStyles}>
             <Stack {...logoSectionStyles}>
@@ -73,7 +73,12 @@ const LoggedInSection = () => {
     const handleAddress = () => {
         router.push('/profile/address');
     };
-
+    const handleVoucherStorage = () => {
+        router.push('/profile/voucher');
+    };
+    const handleAdmin = () => {
+        router.push('/admin/orders');
+    };
     return (
         <Menu>
             <MenuButton as={Button} colorScheme="teal">
@@ -84,11 +89,12 @@ const LoggedInSection = () => {
                 </Flex>
             </MenuButton>
             <MenuList>
-                {isLoggedIn.user.role === 1 && (
+                {isLoggedIn.role == 1 && (
                 <MenuItem onClick={handleAdmin}>Trang chủ Admin</MenuItem>)}
                 <MenuItem onClick={handleProfile}>Quản lí hồ sơ</MenuItem>
                 <MenuItem onClick={handleAddress}>Quản lí địa chỉ</MenuItem>
-                <MenuItem onClick={handlePurchaseHistory}>Lịch sử mua hàng</MenuItem>             
+                <MenuItem onClick={handlePurchaseHistory}>Lịch sử mua hàng</MenuItem> 
+                <MenuItem onClick={handleVoucherStorage}>Kho voucher</MenuItem>              
                 <MenuItem onClick={handleLogout}>Log out</MenuItem>
             </MenuList>
         </Menu>
@@ -99,7 +105,7 @@ const SignupSection = () => {
     const router = useRouter();
 
     return (
-        <>
+
             <HStack spacing={3}>
                 <Button
                     display={{ base: 'none', md: 'inline-flex' }}
@@ -112,7 +118,7 @@ const SignupSection = () => {
                         router.push('/signin')
                     }}
                 >
-                    Đăng nhập
+                    Sign In
                 </Button>
                 <Button
                     display={{ base: 'none', md: 'inline-flex' }}
@@ -123,10 +129,10 @@ const SignupSection = () => {
                     onClick={() => {
                         router.push('/signup')
                     }}
-                >
-                    Đăng ký
+                >   
+                    Sign Up
                 </Button>
             </HStack>
-        </>
+
     )
 }

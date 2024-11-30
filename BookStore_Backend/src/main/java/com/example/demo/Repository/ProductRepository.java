@@ -19,7 +19,10 @@ public interface ProductRepository extends JpaRepository<Product, Long>{
 	
 	@Query("select p from Product p where p.id = ?1 ")
 	Product findByid(Long id);
-	
+
+    @Query(value = "select * from Product p where p.id = ?1 ",nativeQuery = true)
+	Product findByidWithInt(int id);
+
 	Product findNameById(Long id);
 	
     @Query(value = "SELECT TOP 5 * FROM product ORDER BY sold DESC", nativeQuery = true)
@@ -45,4 +48,19 @@ public interface ProductRepository extends JpaRepository<Product, Long>{
     Page<Product> findByCategoryAndSearch(@Param("category") Long category, 
                                           @Param("search") String search, 
                                           Pageable pageable);
+
+    @Query(value="select * from Product order by sold desc;", nativeQuery=true)
+	Page<Product> findTopSellingProducts(Pageable pageable);
+
+    @Query(value="select * from Product order by sold ;", nativeQuery=true)
+	Page<Product> findLeastSellingProducts(Pageable pageable);
+
+    @Query(value="select * from Product order by rating desc ;", nativeQuery=true)
+	Page<Product> findMostRatingProducts(Pageable pageable);
+
+    @Query(value="select * from Product order by rating asc ;", nativeQuery=true)
+	Page<Product> findLeastRatingProducts(Pageable pageable);
+
+    @Query(value="select * from Product  where quantity <= 10 order by quantity", nativeQuery=true)
+	Page<Product> findLeastQuantityProducts(Pageable pageable);
 }

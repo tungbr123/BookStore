@@ -29,9 +29,16 @@ public class ProductController {
 	private ProductService productService;
 	
     @GetMapping("/getAllProduct")
-    public ResponseEntity<List<ProductResponse>> getAllProducts() {
-        List<ProductResponse> products = productService.getAllProduct();
-        return ResponseEntity.ok(products);
+    public ResponseEntity<?> getAllProducts() {
+        return ResponseEntity.ok(productService.getAllProduct());
+    }
+    @GetMapping("/getAllProductWithPaging")
+    public ResponseEntity<?> getAllProductsWithPaging(
+    		@RequestParam int page,
+            @RequestParam int size,
+            @RequestParam String filter
+            ) {
+        return ResponseEntity.ok(productService.getAllProductWithPaging(filter,size,page));
     }
     @GetMapping("/getAllProductByPage")
     public ResponseEntity<Page<Product>> getAllProductsByPage(@RequestParam(defaultValue = "0") int page,

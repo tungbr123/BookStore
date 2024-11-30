@@ -29,16 +29,20 @@ import {
   InputGroup,
   InputRightElement,
   useToast,
+  Text,
 } from "@chakra-ui/react";
 import { SearchIcon } from "@chakra-ui/icons";
 import { Image } from "cloudinary-react";
+import showToast from "@/hooks/useToast";
 
 const cloudinaryUrl = "https://api.cloudinary.com/v1_1/dqyfftfrb/image/upload";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [isModalVoucherOpen, setIsModalVoucherOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [vouchers, setVouchers] = useState([])
   const [editUser, setEditUser] = useState({
     firstname: "",
     lastname: "",
@@ -52,14 +56,60 @@ const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const { colorMode } = useColorMode();
+
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0); // Trang hiện tại
+  const [pageSize, setPageSize] = useState(5);
+
   const toast = useToast();
 
   useEffect(() => {
-    axios.get("http://localhost:8080/getAllUsers").then((response) => {
-      setUsers(response.data);
-    });
-  }, []);
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/getAllUsersWithPaging`, {
+          params: {
+            page: currentPage,
+            size: pageSize
+          },
+        });
+        const ordersPage = response.data.data;
+        setUsers(ordersPage.content);
+        setTotalPages(ordersPage.totalPages);
 
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, [currentPage, pageSize]);
+
+  useEffect(() => {
+    const fetchVouchers = async () => {
+      try {
+        if (selectedUser) {
+          const response = await axios.get(`http://localhost:8080/voucher/${selectedUser.id}`,
+          );
+          const data = response.data.data;
+          console.log(data)
+          setVouchers(data);
+        }
+      } catch (error) {
+        toast({
+          title: "Error fetching vouchers",
+          description: error.response?.data?.message || error.message,
+          status: "error",
+          duration: 5000,
+        });
+      }
+    };
+
+    fetchVouchers();
+  }, [selectedUser]);
+  const handleViewVoucher = (user) => {
+    setSelectedUser(user);
+    setIsModalVoucherOpen(true);
+  };
   const handleEdit = (user) => {
     setSelectedUser(user);
     setEditUser(user);
@@ -202,7 +252,7 @@ const UserManagement = () => {
             <IconButton
               aria-label="Search"
               icon={<SearchIcon />}
-              onClick={() => {}}
+              onClick={() => { }}
             />
           </InputRightElement>
         </InputGroup>
@@ -227,6 +277,7 @@ const UserManagement = () => {
             <Th>Phone</Th>
             <Th>Avatar</Th>
             <Th>Status</Th>
+            <Th>Vouchers</Th>
             <Th>Actions</Th>
           </Tr>
         </Thead>
@@ -242,6 +293,11 @@ const UserManagement = () => {
                 <Avatar src={user.avatar} />
               </Td>
               <Td>{user.status === 1 ? "Active" : "Inactive"}</Td>
+              <Td>
+                <Button size="sm" onClick={() => handleViewVoucher(user)} mr={2}>
+                  View vouchers
+                </Button>
+              </Td>
               <Td>
                 <Button size="sm" onClick={() => handleEdit(user)} mr={2}>
                   Edit
@@ -259,7 +315,23 @@ const UserManagement = () => {
           ))}
         </Tbody>
       </Table>
-
+      <Box mt={4} display="flex" justifyContent="space-between" alignItems="center">
+        <Button
+          isDisabled={currentPage === 0}
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+        >
+          Previous
+        </Button>
+        <Box>
+          Page {currentPage + 1} of {totalPages}
+        </Box>
+        <Button
+          isDisabled={currentPage === totalPages - 1}
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
+        >
+          Next
+        </Button>
+      </Box>
       {/* Modal for Edit User */}
       <Modal isOpen={isEditing} onClose={handleCloseEdit}>
         <ModalOverlay />
@@ -333,7 +405,61 @@ const UserManagement = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-      </Box>
+      <Modal isOpen={isModalVoucherOpen} onClose={() => setIsModalVoucherOpen(false)} size="xl">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>User's Vouchers</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {vouchers.length > 0 ? (
+              <Box overflowX="auto">
+                <Table variant="simple">
+                  <Thead>
+                    <Tr>
+                      <Th>No.</Th>
+                      <Th>Code</Th>
+                      <Th>Type</Th>
+                      <Th>Discount</Th>
+                      <Th>Min Order Value</Th>
+                      <Th>Start Date</Th>
+                      <Th>End Date</Th>
+                      <Th>Status</Th>
+                      <Th>Usage Limit</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {vouchers.map((voucher, index) => (
+                      <Tr key={voucher.code}>
+                        <Td>{index + 1}</Td>
+                        <Td>{voucher.code}</Td>
+                        <Td>{voucher.type}</Td>
+                        <Td>
+                          {voucher.discount_value > 1
+                            ? `${voucher.discount_value}₫`
+                            : `${voucher.discount_value * 100}%`}
+                        </Td>
+                        <Td>{voucher.min_order_value}₫</Td>
+                        <Td>{new Date(voucher.start_date).toLocaleDateString()}</Td>
+                        <Td>{new Date(voucher.end_date).toLocaleDateString()}</Td>
+                        <Td>{voucher.status}</Td>
+                        <Td>{voucher.usage_limit}</Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </Box>
+            ) : (
+              <Text>No vouchers available.</Text>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" onClick={() => setIsModalVoucherOpen(false)}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </Box>
   );
 };
 

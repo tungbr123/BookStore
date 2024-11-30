@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -22,18 +22,24 @@ import {
     HStack,
     Text,
     IconButton,
+    Select, // Import Select component for dropdowns
 } from '@chakra-ui/react';
 import { AddIcon, DeleteIcon, EditIcon } from '@chakra-ui/icons';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
+import showToast from '@/hooks/useToast';
 
 const AddressManagement = ({ userId }) => {
-    const loggedUser = useSelector((state) => state.auth)
+    const loggedUser = useSelector((state) => state.auth);
     const [addresses, setAddresses] = useState([]);
     const [editingAddress, setEditingAddress] = useState(null);
+    const [cities, setCities] = useState([]); // State for cities
+    const [districts, setDistricts] = useState([]); // State for districts
+    const [wards, setWards] = useState([]); // State for wards
     const { isOpen, onOpen, onClose } = useDisclosure();
     const toast = useToast();
 
+    // Fetch addresses from your custom API when component loads
     useEffect(() => {
         const fetchAddresses = async () => {
             try {
@@ -45,15 +51,63 @@ const AddressManagement = ({ userId }) => {
         };
 
         fetchAddresses();
-    }, [userId]);
+    }, [loggedUser.userid]);
+
+    // Fetch cities when component loads
+    useEffect(() => {
+        const fetchCities = async () => {
+            const response = await axios.get('https://provinces.open-api.vn/api/p/');
+            setCities(response.data);
+        };
+        fetchCities();
+    }, []);
+
+    const fetchDistricts = async (cityCode) => {
+        const response = await axios.get(`https://provinces.open-api.vn/api/p/${cityCode}?depth=2`);
+        setDistricts(response.data.districts);
+    };
+
+    const fetchWards = async (districtCode) => {
+        const response = await axios.get(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`);
+        setWards(response.data.wards);
+    };
+
 
     const handleAddressInputChange = (e) => {
         const { name, value } = e.target;
-        setEditingAddress((prevAddress) => ({
-            ...prevAddress,
-            [name]: value,
-        }));
+    
+        // Kiểm tra nếu là mã của city, district, ward thì tìm tên tương ứng
+        if (name === 'city') {
+            const selectedCity = cities.find((city) => city.code == value);
+            setEditingAddress((prevAddress) => ({
+                ...prevAddress,
+                city: selectedCity ? selectedCity.name : '', // Cập nhật tên thành phố
+            }));
+            fetchDistricts(value);
+        } else if (name === 'district') {
+            const selectedDistrict = districts.find((district) => district.code == value);
+            setEditingAddress((prevAddress) => ({
+                ...prevAddress,
+                district: selectedDistrict ? selectedDistrict.name : '', // Cập nhật tên quận/huyện
+            }));
+            fetchWards(value);
+        } else if (name === 'ward') {
+            const selectedWard = wards.find((ward) => ward.code == value);
+            setEditingAddress((prevAddress) => ({
+                ...prevAddress,
+                ward: selectedWard ? selectedWard.name : '', // Cập nhật tên phường/xã
+            }));
+        } else {
+            // Xử lý cho street và apart_num
+            setEditingAddress((prevAddress) => ({
+                ...prevAddress,
+                [name]: value, // Cập nhật giá trị street và apart_num như bình thường
+            }));
+        }
     };
+    
+
+
 
     const handleAddOrEditAddress = async () => {
         if (editingAddress) {
@@ -158,31 +212,60 @@ const AddressManagement = ({ userId }) => {
                         <VStack spacing={4}>
                             <FormControl>
                                 <FormLabel>Thành phố</FormLabel>
-                                <Input
-                                    name="city"
-                                    value={editingAddress?.city || ''}
-                                    placeholder="Thành phố"
-                                    onChange={handleAddressInputChange}
-                                />
+                                <Select name="city" value={editingAddress?.city || ''} onChange={handleAddressInputChange}>
+                                    {/* Nếu editingAddress đã có city thì hiển thị tên thành phố đã chọn, nếu không thì hiển thị "Chọn thành phố" */}
+                                    {!editingAddress?.city ? (
+                                        <option value="">Chọn thành phố</option> // Khi chưa chọn thành phố
+                                    ) : (
+                                        <option value={editingAddress.city}>
+                                            {editingAddress.city} {/* Hiển thị tên thành phố đã chọn */}
+                                        </option>
+                                    )}
+                                    {cities.map((city) => (
+                                        <option key={city.code} value={city.code}>
+                                            {city.name}
+                                        </option>
+                                    ))}
+                                </Select>
                             </FormControl>
+
                             <FormControl>
                                 <FormLabel>Quận</FormLabel>
-                                <Input
-                                    name="district"
-                                    value={editingAddress?.district || ''}
-                                    placeholder="Quận"
-                                    onChange={handleAddressInputChange}
-                                />
+                                <Select name="district" value={editingAddress?.district || ''} onChange={handleAddressInputChange} disabled={!editingAddress?.city}>
+                                {!editingAddress?.district ? (
+                                        <option value="">Chọn quận</option> // Khi chưa chọn thành phố
+                                    ) : (
+                                        <option value={editingAddress.district}>
+                                            {editingAddress.district} {/* Hiển thị tên thành phố đã chọn */}
+                                        </option>
+                                    )}
+                                    {districts.map((district) => (
+                                        <option key={district.code} value={district.code}>
+                                            {district.name}
+                                        </option>
+                                    ))}
+                                </Select>
                             </FormControl>
+
                             <FormControl>
                                 <FormLabel>Phường</FormLabel>
-                                <Input
-                                    name="ward"
-                                    value={editingAddress?.ward || ''}
-                                    placeholder="Phường"
-                                    onChange={handleAddressInputChange}
-                                />
+                                <Select name="ward" value={editingAddress?.ward || ''} onChange={handleAddressInputChange} disabled={!editingAddress?.district}>
+                                {!editingAddress?.ward ? (
+                                        <option value="">Chọn phường</option> // Khi chưa chọn thành phố
+                                    ) : (
+                                        <option value={editingAddress.ward}>
+                                            {editingAddress.ward} {/* Hiển thị tên thành phố đã chọn */}
+                                        </option>
+                                    )}
+                                    {wards.map((ward) => (
+                                        <option key={ward.code} value={ward.code}>
+                                            {ward.name}
+                                        </option>
+                                    ))}
+                                </Select>
                             </FormControl>
+
+
                             <FormControl>
                                 <FormLabel>Đường</FormLabel>
                                 <Input

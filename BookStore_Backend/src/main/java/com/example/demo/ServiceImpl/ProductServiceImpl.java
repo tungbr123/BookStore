@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Entity.Category;
@@ -15,6 +16,7 @@ import com.example.demo.Entity.Product;
 import com.example.demo.Repository.CategoryRepository;
 import com.example.demo.Repository.ProductRepository;
 import com.example.demo.Service.ProductService;
+import com.example.demo.model.response.ApiResponse;
 import com.example.demo.model.response.ProductResponse;
 
 @Service
@@ -26,21 +28,73 @@ public class ProductServiceImpl implements ProductService {
 	private CategoryRepository categoryRepository;
 
 	@Override
-	public List<ProductResponse> getAllProduct() {
-		List<Product> products = productRepository.findAll();
-		List<ProductResponse> productResponseList = new ArrayList<>();
-		for (Product product : products) {
+	public ApiResponse<Object> getAllProduct() {
+		try {
+			List<Product> products = productRepository.findAll();
+			List<ProductResponse> productResponseList = new ArrayList<>();
+			for (Product product : products) {
 
-			Category category = categoryRepository.findById(product.getCategory_id());
-			var productResponse = ProductResponse.builder().id(product.getId()).name(product.getName())
-					.description(product.getDescription()).price(product.getPrice())
-					.promotional_price(product.getPromotional_price()).quantity(product.getQuantity())
-					.sold(product.getSold()).image(product.getImage()).category_name(category.getName())
-					.rating(product.getRating()).build();
-			productResponseList.add(productResponse);
+				Category category = categoryRepository.findById(product.getCategory_id());
+				var productResponse = ProductResponse.builder().id(product.getId()).name(product.getName())
+						.description(product.getDescription()).price(product.getPrice())
+						.promotional_price(product.getPromotional_price()).quantity(product.getQuantity())
+						.sold(product.getSold()).image(product.getImage()).category_name(category.getName())
+						.rating(product.getRating()).build();
+				productResponseList.add(productResponse);
 
+			}
+			return ApiResponse.builder().statusCode("200").data(productResponseList)
+					.message("Get All Product successfully").build();
+		} catch (Exception e) {
+			return ApiResponse.builder().statusCode("500").data(null).message("Failed to load product").build();
 		}
-		return productResponseList;
+	}
+
+	@Override
+	public Object getAllProductWithPaging(String filter, int size, int page) {
+		Pageable pageable = PageRequest.of(page, size);
+
+		Page<Product> productPage = productRepository.findAll(pageable);;
+		int totalPages = 0;
+		
+		if (filter.equals("leastQuantityProducts")) {
+			productPage= productRepository.findLeastQuantityProducts(pageable);
+		}
+		if (filter.equals("mostSellingProducts")) {
+			productPage = productRepository.findTopSellingProducts(pageable);
+		}
+		if (filter.equals("leastSellingProducts")) {
+			productPage = productRepository.findLeastSellingProducts(pageable);
+		}
+		if (filter.equals("mostRatingProducts")) {
+			productPage = productRepository.findMostRatingProducts(pageable);
+		}
+		if (filter.equals("leastRatingProducts")) {
+			productPage = productRepository.findLeastRatingProducts(pageable);
+		}
+		totalPages = productPage.getTotalPages();
+		if (productPage.isEmpty()) {
+			return ApiResponse.builder().statusCode("404").message("No orders found for the user.").data(null)
+					.build();
+		}
+		try {
+			List<ProductResponse> productResponseList = new ArrayList<>();
+			for (Product product : productPage) {
+
+				Category category = categoryRepository.findById(product.getCategory_id());
+				var productResponse = ProductResponse.builder().id(product.getId()).name(product.getName())
+						.description(product.getDescription()).price(product.getPrice())
+						.promotional_price(product.getPromotional_price()).quantity(product.getQuantity())
+						.sold(product.getSold()).image(product.getImage()).category_name(category.getName())
+						.rating(product.getRating()).totalPages(totalPages).build();
+				productResponseList.add(productResponse);
+
+			}
+			return ApiResponse.builder().statusCode("200").data(productResponseList)
+					.message("Get All Product successfully").build();
+		} catch (Exception e) {
+			return ApiResponse.builder().statusCode("500").data(null).message("Failed to load products").build();
+		}
 	}
 
 	@Override
