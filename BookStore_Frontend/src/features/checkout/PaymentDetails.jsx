@@ -48,6 +48,8 @@ export const PaymentDetails = () => {
   const [selectedVouchers, setSelectedVouchers] = useState([]);
   const [showVoucherModal, setShowVoucherModal] = useState(false);
   const [discountAmountOnVouchers, setDiscountAmountOnVouchers] = useState(0)
+  const [code, setCode] = useState(""); // State để lưu giá trị từ input
+  const [allVouchers, setAllVouchers] = useState(null)
   // Cập nhật subtotal và checkout khi check thay đổi
   useEffect(() => {
     if (check && check.length > 0) {
@@ -71,12 +73,22 @@ export const PaymentDetails = () => {
         showToast("Failed to fetch vouchers", 1);
       }
     };
+    const fetchAllVouchers = async () => {
+      try {
+        const response = await api.get(`getAllVouchers`);
+        setAllVouchers(response.data.data);
+      } catch (error) {
+        showToast("Failed to fetch vouchers", 1);
+      }
+    };
+
+    fetchAllVouchers();
 
     fetchVouchers();
   }, [loggedUser.userid]);
   // Tạo đơn hàng khi confirmVNPayMethod được set thành công
   useEffect(() => {
-    if (state.phone && subTotal != 0 && isVNPayRedirected && confirmVNPayMethod === "success" && checkout.length > 0) {
+    if (state.phone && subTotal != 0 && isVNPayRedirected && confirmVNPayMethod === "success" && checkout.length > 0 ) {
       createOrder();
     }
   }, [confirmVNPayMethod, checkout, subTotal, state.phone]);
@@ -107,9 +119,51 @@ export const PaymentDetails = () => {
     if (filterStatus === "used") return voucher.status === "used";
     return false;
   });
+    const handleApplyVoucherWithCode = () => {
+    if (!code) {
+      showToast("Please enter a voucher code");
+      return;
+    }
+    try {
+      // Tìm voucher khớp với code đã nhập
+      const matchingVoucher = allVouchers.find(
+        (voucher) => voucher.code.toLowerCase() == code.toLowerCase()
+      );
+      if (!matchingVoucher) {
+        showToast("Invalid voucher code");
+        return;
+      }
+  
+      // Kiểm tra điều kiện áp dụng
+      if (subTotalProducts < matchingVoucher.min_order_value) {
+        showToast("Order value does not meet voucher conditions", 1);
+        return;
+      }
+  
+      // Tính giảm giá và cập nhật
+      let discount = 0;
+      if (matchingVoucher.discount_value < 1) {
+        discount = subTotalProducts * matchingVoucher.discount_value;
+      } else {
+        discount = matchingVoucher.discount_value;
+      }
+      console.log(matchingVoucher);
+      setDiscountAmountOnVouchers((prev) => prev + discount);
+      setSelectedVouchers((prev) => [...prev, matchingVoucher]);
+      showToast("Voucher applied successfully");
+  
+      // Xóa input sau khi áp dụng
+      setCode("");
+  
+    } catch (error) {
+      showToast("Error applying voucher: " + error.message, 1);
+    }
+  };
   // Hàm tạo đơn hàng
   const createOrder = async () => {
     try {
+      if(subTotal != 0)
+      {
       const responseOrder = await api.post(
         "addOrder",
         {
@@ -132,36 +186,38 @@ export const PaymentDetails = () => {
         );
 
         if (responseOrderItem.status === 200) {
-          await api.delete(`deleteCartitemByUserID?userid=${loggedUser.userid}`, {}, { headers: { "Content-Type": "application/json" } });
-          if (discountAmountOnVouchers !== 0) {
+          // await api.delete(`deleteCartitemByUserID?userid=${loggedUser.userid}`, {}, { headers: { "Content-Type": "application/json" } });
+          if (discountAmountOnVouchers != 0) {
             const ordersResponse = await api.get(`getOrdersByUserId?userid=${loggedUser.userid}`);
             if (ordersResponse.status === 200) {
               const orders = ordersResponse.data.data;
               // Bước 2: Lấy order_id của đơn hàng cuối cùng
               const lastOrder = orders[orders.length - 1];
               const lastOrderId = lastOrder.id;
-              console.log(selectedVouchers)
               for (const voucher  of selectedVouchers) {
                 const orderVoucher = {
-                  order_id: lastOrderId,
+                  orderid: lastOrderId,
                   voucher_id: voucher.id,
                   discount_value: voucher.discount_value,
                   userid: loggedUser.userid // hoặc discount_value cụ thể cho từng voucher
                 };
-
                 // Gọi API addOrderVoucher cho mỗi voucher_id
                 const response = await api.post('addOrderVoucher', orderVoucher);
               }
             }
           }
           showToast("Order placed successfully");
-          router.push("/")
+          router.push("/profile/order")
         } else {
           showToast("Failed to add order items");
         }
       } else {
         showToast("Failed to create order");
       }
+    }else
+    {
+      showToast("There are not any order items to pay")
+    }
     } catch (error) {
       showToast("Error during order creation: " + error.message, 1);
     }
@@ -187,6 +243,7 @@ export const PaymentDetails = () => {
     setShowVoucherModal(false);
   };
   
+  
 
   // Xử lý thanh toán
   const handlePayMent = async () => {
@@ -194,11 +251,14 @@ export const PaymentDetails = () => {
       if (paymentMethod === "cashOnDelivery") {
         createOrder();
       } else if (paymentMethod === "vnPay") {
+        console.log(subTotal)
         const amount = subTotal;
         const bankCode = selectedBankCode;
         const vnpayUrl = `http://localhost:8080/api/v1/payment/vn-pay?amount=${amount}&bankCode=${bankCode}`;
         if (checkout && checkout.length > 0) {
           sessionStorage.setItem("checkout", JSON.stringify(checkout));
+          localStorage.setItem("selectedVouchers", JSON.stringify(selectedVouchers));         
+          localStorage.setItem("discountAmountOnVouchers", JSON.stringify(discountAmountOnVouchers));
         } else {
           console.log("Checkout data is empty or invalid.");
           return;
@@ -224,9 +284,13 @@ export const PaymentDetails = () => {
 
       if (paymentSuccess) {
         const savedCheckout = sessionStorage.getItem("checkout");
+        const savedSelectedVouchers = localStorage.getItem("selectedVouchers");
+        const savedDiscountAmountOnVouchers = localStorage.getItem("discountAmountOnVouchers");
         if (savedCheckout) {
           setCheck(JSON.parse(savedCheckout));
           setCheckout(JSON.parse(savedCheckout));
+          setDiscountAmountOnVouchers(JSON.parse(savedDiscountAmountOnVouchers));
+          setSelectedVouchers(JSON.parse(savedSelectedVouchers));
           setIsPaid(1);
           setIsVNPayRedirected(true); // Đánh dấu đã redirect
           if (!confirmVNPayMethod) {
@@ -257,6 +321,8 @@ export const PaymentDetails = () => {
               type="text"
               placeholder="Enter Your Voucher"
               rounded="full"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
               w="190px"
             />
             <Button
@@ -265,6 +331,7 @@ export const PaymentDetails = () => {
               rounded="full"
               ml="-40px"
               px="2rem"
+              onClick={handleApplyVoucherWithCode}
               _hover={{
                 bgColor: "brand.primaryDark",
               }}

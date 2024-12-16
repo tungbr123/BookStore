@@ -1,6 +1,7 @@
 package com.example.demo.ServiceImpl;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +29,8 @@ import com.example.demo.model.request.Voucher.ProductVoucherRequest;
 import com.example.demo.model.request.Voucher.VoucherRequest;
 import com.example.demo.model.response.ApiResponse;
 import com.example.demo.model.response.ProductVoucherResponse;
+import com.example.demo.model.response.UserRevenueResponse;
+import com.example.demo.model.response.UserVoucherOnProductResponse;
 import com.example.demo.model.response.UserVoucherResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -48,7 +51,7 @@ public class VoucherServiceImpl implements VoucherService {
 	OrderVoucherRepository orderVoucherRepository;
 
 	@Override
-	public ApiResponse<Object> getVouchersByUserId(Long userId) {
+	public ApiResponse<Object> getVouchersByUserId(int userId) {
 		try {
 			// Fetch UserVoucher entries by userId
 			List<User_Voucher> userVouchers = userVoucherRepository.findByUser_id(userId);
@@ -69,7 +72,55 @@ public class VoucherServiceImpl implements VoucherService {
 					.data(null).build();
 		}
 	}
+	@Override
+	public ApiResponse<Object> getUserVoucherOnProduct(int userid, int productid, int voucherid) {
+		try {
+			List<Object[]> userVoucherOnProduct = voucherRepository.findUserVoucherOnProduct(userid, productid, voucherid);
+			List<UserVoucherOnProductResponse> userVoucherOnProductResponses = new ArrayList<>();
+			for (Object[] result : userVoucherOnProduct) {
+				int userId = ((Number) result[1]).intValue(); // Convert to Long
+				int productId = ((Number) result[7]).intValue(); // Convert to Long
+				int voucherId = ((Number) result[2]).intValue(); // Convert to Long
+				UserVoucherOnProductResponse userVoucherOnProductResponse = UserVoucherOnProductResponse.builder().userid(userId)
+						.productid(productId).voucherid(voucherId)
+						.build();
+				userVoucherOnProductResponses.add(userVoucherOnProductResponse);
+			}
+			return ApiResponse.builder().statusCode("200").message("Get UserVoucher On Product Successfully").data(userVoucherOnProductResponses).build();
 
+		} catch (Exception ex) {
+			return ApiResponse.builder().statusCode("500").message("Internal Server Error: " + ex.getMessage())
+					.data(null).build();
+		}
+	}
+	@Override
+	public ApiResponse<Object> getVouchersByUserIdAndStatus(int userid, String status) {
+		try {
+			// Fetch UserVoucher entries by userId
+			List<User_Voucher> userVouchers = new ArrayList<>();
+			if(status.equals("all")) {
+				userVouchers = userVoucherRepository.findByUser_id(userid); 
+			}
+			else{
+				userVouchers = userVoucherRepository.findByUser_idAndStatus(userid,status);
+			}
+			// Create UserVoucherResponse list
+			List<UserVoucherResponse> responses = userVouchers.stream().map(userVoucher -> {
+				// Fetch Voucher details for each UserVoucher
+				Voucher voucher = voucherRepository.findById(userVoucher.getVoucher_id());
+				// Map Voucher and UserVoucher data into UserVoucherResponse
+				return new UserVoucherResponse(userVoucher.getVoucher_id(), voucher.getCode(), voucher.getType(),
+						voucher.getDiscount_value(), voucher.getMin_order_value(), voucher.getStart_date(),
+						voucher.getEnd_date(), voucher.getUsage_limit(), voucher.getImage_voucher(),
+						userVoucher.getStatus(), userVoucher.getUsage_count(), userVoucher.getUser_id(), userVoucher.getId());
+			}).collect(Collectors.toList());
+			return ApiResponse.builder().statusCode("200").message("Get Orders Successfully").data(responses).build();
+
+		} catch (Exception ex) {
+			return ApiResponse.builder().statusCode("500").message("Internal Server Error: " + ex.getMessage())
+					.data(null).build();
+		}
+	}
 	@Override
 	public User_Voucher addUserVoucher(User_Voucher userVoucher) {
 		// TODO Auto-generated method stub
@@ -211,8 +262,16 @@ public class VoucherServiceImpl implements VoucherService {
 
 	@Override
 	public ApiResponse<Object> getUserVouchers(int userid) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			List<User_Voucher> user_vouchers = userVoucherRepository.findByUser_id(userid);
+
+			return ApiResponse.builder().statusCode("200").message("Get all vouchers Successfully").data(user_vouchers)
+					.build();
+
+		} catch (Exception e) {
+			return ApiResponse.builder().statusCode("500").message("Fail to get all user vouchers").data(null).build();
+		}
 	}
+
 
 }

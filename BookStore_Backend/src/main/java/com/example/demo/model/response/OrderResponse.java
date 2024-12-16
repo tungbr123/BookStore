@@ -1,6 +1,7 @@
 package com.example.demo.model.response;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -32,10 +33,11 @@ public class OrderResponse {
     private int discount_value_vouchers;
     
     private String status;
-    private Date date_order;
+    private Timestamp date_order;
     private Long amountFromUser;
     private List<OrderitemResponse> orderItems;
     private int totalPages;
+    private int is_confirmed_user;
     
     private boolean overdue;
     private long daysPending;

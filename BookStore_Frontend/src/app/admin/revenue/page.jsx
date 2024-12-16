@@ -186,24 +186,36 @@ const RevenueDashboard = () => {
 
   return (
     <Container maxW="container.xl" py={4}>
-      <Heading size="lg" mb={4}>Thống kê Doanh thu</Heading>
+      <Heading size="lg" mb={4}>Revenue Statistics</Heading>
 
       <SimpleGrid columns={[1, 2, 4]} spacing={4}>
         <Stat>
-          <StatLabel>Tổng Doanh thu</StatLabel>
-          <StatNumber>{revenueData.getTotalRevenue}₫</StatNumber>
+          <StatLabel>Total Revenue</StatLabel>
+          <StatNumber>{Number(revenueData.getTotalRevenue).toLocaleString('vi-VN')}đ</StatNumber>
         </Stat>
         <Stat>
-          <StatLabel>Tổng Số Đơn Hàng</StatLabel>
+          <StatLabel>Total Pending Orders</StatLabel>
+          <StatNumber>{Number(revenueData.getRevenueByPending).toLocaleString('vi-VN')}đ</StatNumber>
+        </Stat>
+        <Stat>
+          <StatLabel>Total Orders in Delivery</StatLabel>
+          <StatNumber>{Number(revenueData.getRevenueByDelivering).toLocaleString('vi-VN')}đ</StatNumber>
+        </Stat>
+        <Stat>
+          <StatLabel>Total Canceled Orders</StatLabel>
+          <StatNumber>{Number(revenueData.getRevenueByCanceled).toLocaleString('vi-VN')}đ</StatNumber>
+        </Stat>
+        <Stat>
+          <StatLabel>Total Number of Orders</StatLabel>
           <StatNumber>{revenueData.getAllOrderQuantity}</StatNumber>
         </Stat>
       </SimpleGrid>
 
       <Box mt={8}>
-        <Heading size="md" mb={4}>Biểu đồ doanh thu</Heading>
+        <Heading size="md" mb={4}>Revenue Chart</Heading>
         <FormControl display="flex" alignItems="center" mb={4}>
           <FormLabel htmlFor="start-date" mb="0">
-            Từ ngày:
+            From Date:
           </FormLabel>
           <DatePicker
             id="start-date"
@@ -215,7 +227,7 @@ const RevenueDashboard = () => {
             dateFormat="dd/MM/yyyy"
           />
           <FormLabel htmlFor="end-date" mb="0" ml={4}>
-            Đến ngày:
+            To Date:
           </FormLabel>
           <DatePicker
             id="end-date"
@@ -234,7 +246,7 @@ const RevenueDashboard = () => {
       </Box>
 
       <Box mt={8}>
-        <Heading size="md" mb={4}>Doanh thu theo trạng thái đơn hàng</Heading>
+        <Heading size="md" mb={4}>Revenue by Order Status</Heading>
         <SimpleGrid columns={1} spacing={4}>
           <Bar data={barChartData} options={options}
             ref={chartRef}
@@ -243,18 +255,18 @@ const RevenueDashboard = () => {
       </Box>
 
       <Box mt={8}>
-        <Heading size="md" mb={4}>Người dùng mua hàng nhiều nhất</Heading>
+        <Heading size="md" mb={4}>Top Users with Most Orders</Heading>
         <SimpleGrid columns={[1, 2, 4]} spacing={4}>
           {top3Users.map((user) => (
             <Box key={loggedUser.userid} p={4} borderWidth="1px" borderRadius="lg">
               <Heading size="sm" mb={2}>{user.username}</Heading>
               <Stat>
-                <StatLabel>Số Đơn Hàng</StatLabel>
+                <StatLabel>Total Orders</StatLabel>
                 <StatNumber>{user.getTotalOrderByUser}</StatNumber>
               </Stat>
               <Stat>
-                <StatLabel>Tổng Doanh Thu</StatLabel>
-                <StatNumber>{user.getTotalRevenueByUser} ₫</StatNumber>
+                <StatLabel>Total Revenue</StatLabel>
+                <StatNumber>{Number(user.getTotalRevenueByUser).toLocaleString('vi-VN')}đ</StatNumber>
               </Stat>
               <Button onClick={() => fetchUserOrders(user.userid)}>View Orders</Button>
             </Box>
@@ -263,13 +275,13 @@ const RevenueDashboard = () => {
       </Box>
 
       <Box mt={8}>
-        <Heading size="md" mb={4}>Mặt hàng được mua nhiều nhất</Heading>
+        <Heading size="md" mb={4}>Most Purchased Products</Heading>
         <SimpleGrid columns={[1, 2, 4]} spacing={4}>
           {top3Products.map((product, index) => (
             <Box key={index} p={4} borderWidth="1px" borderRadius="lg">
               <Heading size="sm" mb={2}>{product.productname}</Heading>
               <Stat>
-                <StatLabel>Số Lượng Bán</StatLabel>
+                <StatLabel>Quantity Sold</StatLabel>
                 <StatNumber>{product.getTotalCount}</StatNumber>
               </Stat>
             </Box>
@@ -290,14 +302,14 @@ const RevenueDashboard = () => {
                   <Tr>
                     <Th border="1px" borderColor="gray.300">ID</Th>
                     {/* <Th border="1px" borderColor="gray.300">UserID</Th> */}
-                    <Th border="1px" borderColor="gray.300">Hình ảnh</Th>
-                    <Th border="1px" borderColor="gray.300">Sản phẩm</Th>
-                    <Th border="1px" borderColor="gray.300">Ngày</Th>
-                    <Th border="1px" borderColor="gray.300">Trạng thái</Th>
-                    <Th border="1px" borderColor="gray.300">Số lượng</Th>
-                    <Th border="1px" borderColor="gray.300">Giá</Th>
-                    <Th border="1px" borderColor="gray.300">Tổng tiền</Th>
-                    {/* <Th border="1px" borderColor="gray.300">Hành động</Th> */}
+                    <Th border="1px" borderColor="gray.300">Image</Th>
+                    <Th border="1px" borderColor="gray.300">Product</Th>
+                    <Th border="1px" borderColor="gray.300">Date</Th>
+                    <Th border="1px" borderColor="gray.300">Status</Th>
+                    <Th border="1px" borderColor="gray.300">Quantity</Th>
+                    <Th border="1px" borderColor="gray.300">Price</Th>
+                    <Th border="1px" borderColor="gray.300">Total</Th>
+                    {/* <Th border="1px" borderColor="gray.300">Actions</Th> */}
                   </Tr>
                 </Thead>
                 <Tbody>
@@ -329,10 +341,10 @@ const RevenueDashboard = () => {
                                 {order.amountFromUser}₫
                               </Td>
                               {/* <Td rowSpan={order.orderItems.length} border="1px" borderColor="gray.300">
-                                <Button size="sm" colorScheme="blue">
-                                  Xem chi tiết
-                                </Button>
-                              </Td> */}
+                            <Button size="sm" colorScheme="blue">
+                              View Details
+                            </Button>
+                          </Td> */}
                             </>
                           )}
                         </Tr>
@@ -351,6 +363,7 @@ const RevenueDashboard = () => {
         </ModalContent>
       </Modal>
     </Container>
+
   );
 };
 

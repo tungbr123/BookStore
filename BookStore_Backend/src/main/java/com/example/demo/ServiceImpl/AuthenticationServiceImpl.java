@@ -104,7 +104,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if(userRepository.findByEmail(request.getEmail()).isEmpty()){
             var user = _User.builder().email(request.getEmail()).password(passwordEncoder.encode(request.getPassword()))
 					.firstname(request.getFirstname()).lastname(request.getLastname()).phone(request.getPhone())
-					.CMND(request.getCmnd()).statusUser(0).role(1).build();
+					.CMND(request.getCmnd()).statusUser(0).role(2).build();
             try {
                 userRepository.save(user);
                 String token = UUID.randomUUID().toString();

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.Entity.Product;
 import com.example.demo.Service.ProductService;
+import com.example.demo.model.response.ProductAuthorResponse;
 import com.example.demo.model.response.ProductResponse;
 
 @RestController
@@ -40,6 +41,14 @@ public class ProductController {
             ) {
         return ResponseEntity.ok(productService.getAllProductWithPaging(filter,size,page));
     }
+    
+    @GetMapping("/getAllProductsByCategory")
+    public ResponseEntity<List<Product>> getAllProductsByCategory(
+    		@RequestParam int categoryid
+            ) {
+        return new ResponseEntity<>(productService.getAllProductsByCategory(categoryid), HttpStatus.OK);
+    }
+    
     @GetMapping("/getAllProductByPage")
     public ResponseEntity<Page<Product>> getAllProductsByPage(@RequestParam(defaultValue = "0") int page,
                                                         @RequestParam(defaultValue = "6") int size) {
@@ -48,13 +57,13 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
     @GetMapping("/getAllProductByCategory")
-    public ResponseEntity<Page<Product>> getAllProductByCategory(
+    public ResponseEntity<List<ProductAuthorResponse>> getAllProductByCategory(
         @RequestParam int page, 
         @RequestParam int size, 
         @RequestParam(required = false) Long category,
         @RequestParam(required = false) String search) {
 
-        Page<Product> products = productService.getAllProducts(page, size, category, search);
+        List<ProductAuthorResponse> products = productService.getAllProducts(page, size, category, search);
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
     @PostMapping("/addProduct") // Mapping for adding a new book
@@ -71,10 +80,10 @@ public class ProductController {
 		return new ResponseEntity<>(books, HttpStatus.OK);
 	}
 	@GetMapping("/getProduct")
-	public ResponseEntity<Product> getProductByID(@RequestParam(value = "id") Long id) {
+	public ResponseEntity<ProductAuthorResponse> getProductByID(@RequestParam(value = "id") Long id) {
 		// Retrieve all books using BookService and return a ResponseEntity with the
 		// list of books and HTTP status OK
-		Product product = productService.getProductByID(id);
+		ProductAuthorResponse product = productService.getProductByID(id);
 		return new ResponseEntity<>(product, HttpStatus.OK);
 	}
     @PostMapping("/create")
@@ -90,20 +99,20 @@ public class ProductController {
     }
     
     @GetMapping("/getTrendingProducts")
-    public ResponseEntity<List<Product>> getTrendingProducts() {
-        List<Product> products = productService.getTrendingProducts();
+    public ResponseEntity<List<ProductAuthorResponse>> getTrendingProducts() {
+        List<ProductAuthorResponse> products = productService.getTrendingProducts();
         return ResponseEntity.ok(products);
     }
 
     @GetMapping("/getBestsellingProducts")
-    public ResponseEntity<List<Product>> getBestSellingProducts() {
-        List<Product> products = productService.getBestSellingProducts();
+    public ResponseEntity<List<ProductAuthorResponse>> getBestSellingProducts() {
+        List<ProductAuthorResponse> products = productService.getBestSellingProducts();
         return ResponseEntity.ok(products);
     }
 
     @GetMapping("/getBestdealsProducts")
-    public ResponseEntity<List<Product>> getBestDeals() {
-        List<Product> products = productService.getBestDeals();
+    public ResponseEntity<List<ProductAuthorResponse>> getBestDeals() {
+        List<ProductAuthorResponse> products = productService.getBestDeals();
         return ResponseEntity.ok(products);
     }
 	

@@ -75,7 +75,7 @@ const AddressManagement = ({ userId }) => {
 
     const handleAddressInputChange = (e) => {
         const { name, value } = e.target;
-    
+
         // Kiểm tra nếu là mã của city, district, ward thì tìm tên tương ứng
         if (name === 'city') {
             const selectedCity = cities.find((city) => city.code == value);
@@ -105,7 +105,7 @@ const AddressManagement = ({ userId }) => {
             }));
         }
     };
-    
+
 
 
 
@@ -178,14 +178,14 @@ const AddressManagement = ({ userId }) => {
 
     return (
         <Container maxW="container.md" py={4}>
-            <Heading size="lg" mb={6}>Quản lý Địa chỉ</Heading>
+            <Heading size="lg" mb={6}>Address Management</Heading>
             <VStack spacing={4} align="stretch">
                 {addresses.map((address) => (
                     <HStack key={address.id} spacing={4} align="center" w="full" p={4} borderWidth={1} borderRadius="lg">
                         <Box flex="1">
                             <Text>
-                                <b>Địa chỉ:</b> {address.apart_num}/ {address.street}/<br />
-                                <b>Phường:</b> {address.ward}, <b>Quận:</b> {address.district}, <b>Thành phố:</b> {address.city}
+                                <b>Address:</b> {address.apart_num}/ {address.street}/<br />
+                                <b>Ward:</b> {address.ward}, <b>District:</b> {address.district}, <b>City:</b> {address.city}
                             </Text>
                         </Box>
                         <IconButton
@@ -200,25 +200,25 @@ const AddressManagement = ({ userId }) => {
                         />
                     </HStack>
                 ))}
-                <Button leftIcon={<AddIcon />} colorScheme="blue" onClick={onOpen}>Thêm Địa chỉ</Button>
+                <Button leftIcon={<AddIcon />} colorScheme="blue" onClick={onOpen}>Add Address</Button>
             </VStack>
 
             <Modal isOpen={isOpen} onClose={() => { onClose(); setEditingAddress(null); }}>
                 <ModalOverlay />
                 <ModalContent>
-                    <ModalHeader>{editingAddress ? 'Chỉnh sửa Địa chỉ' : 'Thêm Địa chỉ mới'}</ModalHeader>
+                    <ModalHeader>{editingAddress ? 'Edit Address' : 'Add New Address'}</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
                         <VStack spacing={4}>
                             <FormControl>
-                                <FormLabel>Thành phố</FormLabel>
+                                <FormLabel>City</FormLabel>
                                 <Select name="city" value={editingAddress?.city || ''} onChange={handleAddressInputChange}>
-                                    {/* Nếu editingAddress đã có city thì hiển thị tên thành phố đã chọn, nếu không thì hiển thị "Chọn thành phố" */}
+                                    {/* If editingAddress already has a city, show the selected city name; otherwise, show "Select City" */}
                                     {!editingAddress?.city ? (
-                                        <option value="">Chọn thành phố</option> // Khi chưa chọn thành phố
+                                        <option value="">Select City</option> // When no city is selected
                                     ) : (
                                         <option value={editingAddress.city}>
-                                            {editingAddress.city} {/* Hiển thị tên thành phố đã chọn */}
+                                            {editingAddress.city} {/* Show selected city name */}
                                         </option>
                                     )}
                                     {cities.map((city) => (
@@ -230,13 +230,13 @@ const AddressManagement = ({ userId }) => {
                             </FormControl>
 
                             <FormControl>
-                                <FormLabel>Quận</FormLabel>
+                                <FormLabel>District</FormLabel>
                                 <Select name="district" value={editingAddress?.district || ''} onChange={handleAddressInputChange} disabled={!editingAddress?.city}>
-                                {!editingAddress?.district ? (
-                                        <option value="">Chọn quận</option> // Khi chưa chọn thành phố
+                                    {!editingAddress?.district ? (
+                                        <option value="">Select District</option> // When no district is selected
                                     ) : (
                                         <option value={editingAddress.district}>
-                                            {editingAddress.district} {/* Hiển thị tên thành phố đã chọn */}
+                                            {editingAddress.district} {/* Show selected district name */}
                                         </option>
                                     )}
                                     {districts.map((district) => (
@@ -248,13 +248,13 @@ const AddressManagement = ({ userId }) => {
                             </FormControl>
 
                             <FormControl>
-                                <FormLabel>Phường</FormLabel>
+                                <FormLabel>Ward</FormLabel>
                                 <Select name="ward" value={editingAddress?.ward || ''} onChange={handleAddressInputChange} disabled={!editingAddress?.district}>
-                                {!editingAddress?.ward ? (
-                                        <option value="">Chọn phường</option> // Khi chưa chọn thành phố
+                                    {!editingAddress?.ward ? (
+                                        <option value="">Select Ward</option> // When no ward is selected
                                     ) : (
                                         <option value={editingAddress.ward}>
-                                            {editingAddress.ward} {/* Hiển thị tên thành phố đã chọn */}
+                                            {editingAddress.ward} {/* Show selected ward name */}
                                         </option>
                                     )}
                                     {wards.map((ward) => (
@@ -265,22 +265,21 @@ const AddressManagement = ({ userId }) => {
                                 </Select>
                             </FormControl>
 
-
                             <FormControl>
-                                <FormLabel>Đường</FormLabel>
+                                <FormLabel>Street</FormLabel>
                                 <Input
                                     name="street"
                                     value={editingAddress?.street || ''}
-                                    placeholder="Đường"
+                                    placeholder="Street"
                                     onChange={handleAddressInputChange}
                                 />
                             </FormControl>
                             <FormControl>
-                                <FormLabel>Số nhà</FormLabel>
+                                <FormLabel>House Number</FormLabel>
                                 <Input
                                     name="apart_num"
                                     value={editingAddress?.apart_num || ''}
-                                    placeholder="Số nhà"
+                                    placeholder="House Number"
                                     onChange={handleAddressInputChange}
                                 />
                             </FormControl>
@@ -288,13 +287,14 @@ const AddressManagement = ({ userId }) => {
                     </ModalBody>
                     <ModalFooter>
                         <Button colorScheme="blue" onClick={handleAddOrEditAddress}>
-                            {editingAddress ? 'Lưu thay đổi' : 'Thêm Địa chỉ'}
+                            {editingAddress ? 'Save Changes' : 'Add Address'}
                         </Button>
-                        <Button variant="ghost" onClick={() => { onClose(); setEditingAddress(null); }}>Hủy</Button>
+                        <Button variant="ghost" onClick={() => { onClose(); setEditingAddress(null); }}>Cancel</Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>
         </Container>
+
     );
 };
 

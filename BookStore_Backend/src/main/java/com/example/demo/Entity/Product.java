@@ -7,12 +7,16 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+
+import java.io.Serializable;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.sf.jsqlparser.expression.DateTimeLiteralExpression.DateTime;
 
 @Entity
 @NoArgsConstructor
@@ -21,7 +25,7 @@ import lombok.Setter;
 @Setter
 @Table(name = "Product")
 @Builder
-public class Product {
+public class Product implements Serializable{
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -48,16 +52,25 @@ public class Product {
 	@Column(name = "Image")
 	private String image;
 	
-	@Column(name="category_id")
-	private int category_id;
-	
-	@Column(name = "rating")
+	@Column(name="rating")
 	private float rating;
-
-
-
-
-
 	
+	@Column(name = "translator")
+	private String translator;
+	
+	@Column(name = "supplier")
+	private String supplier;
+	
+	@Column(name = "publisher")
+	private String publisher;
+	
+	@Column(name = "published_date")
+	private int published_date;
+	
+	@Column(name = "pages")
+	private int pages;
+	
+	@Column(name = "weight")
+	private int weight;
 	
 }

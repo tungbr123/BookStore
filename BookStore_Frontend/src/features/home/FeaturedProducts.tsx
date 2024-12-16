@@ -22,6 +22,7 @@ interface FeaturedProductsProp {
 }
 
 export const FeaturedProducts = ({ title, products }: FeaturedProductsProp) => {
+
     const SwiperSettings: SwiperOptions = {
         modules: [Navigation, Autoplay],
         spaceBetween: 10,

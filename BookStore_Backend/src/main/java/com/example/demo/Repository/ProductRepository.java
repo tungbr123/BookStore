@@ -27,6 +27,9 @@ public interface ProductRepository extends JpaRepository<Product, Long>{
 	
     @Query(value = "SELECT TOP 5 * FROM product ORDER BY sold DESC", nativeQuery = true)
     List<Product> findTop5BestSellingProducts(); // Bestselling
+    
+    @Query(value = "SELECT TOP 5 * FROM product where category_id = :categoryid", nativeQuery = true)
+    List<Product> getAllProductByCategory(int categoryid);
 
     @Query(value = "SELECT TOP 5 * FROM product ORDER BY rating DESC", nativeQuery = true)
     List<Product> findTop5TrendingProducts(); // Trending
@@ -36,20 +39,18 @@ public interface ProductRepository extends JpaRepository<Product, Long>{
     
     Page<Product> findAll(Pageable pageable);
     
-    @Query(value = "SELECT * FROM Product p WHERE " +
-            "(COALESCE(:category, NULL) IS NULL OR p.category_id = :category) AND " +
-            "(LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-            "LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))",
-            countQuery = "SELECT COUNT(*) FROM Product p WHERE " +
-            "(COALESCE(:category, NULL) IS NULL OR p.category_id = :category) AND " +
-            "(LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-            "LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))",
+    @Query(value = "SELECT  p.* FROM Product p , Product_Category pc \r\n"
+    		+ "WHERE (:category IS NULL OR pc.category_id = :category) and p.id = pc.product_id\r\n"
+    		+ "  AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) \r\n"
+    		+ "       OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))\r\n"
+    		+ "GROUP BY p.id, p.name, p.description, p.price, p.promotional_price, p.quantity, p.sold, p.image, p.rating, p.translator, p.supplier, p.publisher, p.published_date, p.pages, p.weight\r\n"
+    		+ "ORDER BY p.id",
             nativeQuery = true)
-    Page<Product> findByCategoryAndSearch(@Param("category") Long category, 
+    Page<Product> findDistinctByCategoryAndSearch(@Param("category") Long category, 
                                           @Param("search") String search, 
                                           Pageable pageable);
 
-    @Query(value="select * from Product order by sold desc;", nativeQuery=true)
+    @Query(value="select * from Product order by sold desc;", nativeQuery=true) 
 	Page<Product> findTopSellingProducts(Pageable pageable);
 
     @Query(value="select * from Product order by sold ;", nativeQuery=true)

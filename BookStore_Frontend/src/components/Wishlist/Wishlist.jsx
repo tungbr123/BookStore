@@ -20,40 +20,12 @@ import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import api from '@/ApiProcess/api';
 import showToast from '@/hooks/useToast';
+import { useWishList } from '@/WishlistContext';
 
 export const Wishlist = () => {
   const router = useRouter()
   const loggedUser = useSelector((state) => state.auth);
-  const [wishlist, setWishlist] = useState([]);
-
-  useEffect(() => {
-    if (loggedUser.userid) {
-      const fetchWishlistitem = async () => {
-        try {
-          const response = await api.get(`getWishlist?userid=${loggedUser.userid}`, {}, {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-          if (response.status === 200) {
-            const data = response.data.data
-            if (Array.isArray(data) ) {
-              setWishlist(data); // Assuming you have a setCart function
-            }
-            else
-              console.log(data)
-
-          } else {
-            showToast("Lấy thất bại");
-          }
-        } catch (error) {
-          showToast("Lỗi khi lấy Wishlistitem");
-          console.error("Error fetching cart items", error);
-        };
-      }
-      fetchWishlistitem();
-    }
-  }, [wishlist]);
+  const {wishlist, setWishlist, fetchWishlistitem} = useWishList();
 
   const handleClearWishlist = async () => {
     try {

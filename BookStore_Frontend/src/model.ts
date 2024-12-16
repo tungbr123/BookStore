@@ -2,7 +2,15 @@ export type ItemKey='cart' | 'wishlist' | 'checkout'
 
 export interface NavItem{
     label: string,
-    href: string
+    href: string,
+}
+export interface NavCategory{
+    label: string,
+    href: string,
+    children: {
+        label: string,
+        href: string,
+    }[],
 }
 
 export interface IRating{
@@ -19,7 +27,18 @@ export interface IProduct{
     image: string;
     category: ICategory
     rating: number;
+    translator: string;
+    supplier: string;
+    publisher: string;
+    published_date: number;
+    pages: number;
+    weight: number;
+    author_name: Array<string>;
 }   
+export interface IAuthor{
+    id: number;
+    name: string;
+}
 
 export interface ICategory{
     id: number;

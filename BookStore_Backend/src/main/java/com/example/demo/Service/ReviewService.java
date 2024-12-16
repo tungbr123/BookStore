@@ -10,6 +10,7 @@ public interface ReviewService {
 
 	ApiResponse<Object> addReview(ReviewRequest reviewRequest);
 	ApiResponse<Object> getReviewByProductId(int productid);
+	ApiResponse<Object> getAllReviewsByUsers(Long userid);
 
 
 }

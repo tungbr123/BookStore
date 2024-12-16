@@ -1,27 +1,10 @@
-﻿CREATE TABLE Delivery (
+CREATE TABLE Delivery (
     id INT identity(1,1) NOT NULL,
     name VARCHAR(100) UNIQUE NOT NULL,
     description VARCHAR(1000) NOT NULL,
     price int NOT NULL CHECK (price >= 0)
 	Primary key(id)
 );
-CREATE TABLE Voucher (
-    id INT PRIMARY KEY IDENTITY(1,1),
-    code NVARCHAR(50) UNIQUE NOT NULL,
-    type NVARCHAR(10) CHECK (type IN ('product', 'platform')) NOT NULL,
-    discount_value DECIMAL(10, 2) NOT NULL,
-    min_order_value DECIMAL(10, 2) DEFAULT 0.0,
-    start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
-    usage_limit INT DEFAULT NULL,
-    created_at DATETIME DEFAULT GETDATE()
-);
-ALTER TABLE User_Voucher
-ADD today_date DATE DEFAULT GETDATE();
-ALTER TABLE Voucher
-ADD image_voucher nvarchar(100) null;
-
-
 CREATE TABLE Category (
     id INT identity(1,1) PRIMARY KEY,
     name VARCHAR(32) UNIQUE NOT NULL,
@@ -146,39 +129,8 @@ CREATE TABLE CartItem (
     FOREIGN KEY (productId) REFERENCES Product(id)
 );
 
-CREATE TABLE User_Voucher (
-	id INT PRIMARY KEY IDENTITY,
-    user_id INT NOT NULL,
-    voucher_id INT NOT NULL,
-    usage_count INT DEFAULT 0,	
-    status NVARCHAR(10) DEFAULT 'active' CHECK (status IN ('active', 'expired')),
-    FOREIGN KEY (user_id) REFERENCES _User(id) ON DELETE CASCADE,
-    FOREIGN KEY (voucher_id) REFERENCES Voucher(id) ON DELETE CASCADE
-);
-ALTER TABLE User_Voucher
-ADD status VARCHAR(10) NULL
-CHECK (status IN ('active', 'expired', 'used'))
-ALTER TABLE Voucher
-DROP COLUMN today_date;
 
-CREATE TABLE Product_Voucher (
-	id INT PRIMARY KEY IDENTITY,
-    product_id INT NOT NULL,
-    voucher_id INT NOT NULL,
-    FOREIGN KEY (product_id) REFERENCES Product(id) ON DELETE CASCADE,
-    FOREIGN KEY (voucher_id) REFERENCES Voucher(id) ON DELETE CASCADE
-);
 
--- Bảng OrderVoucher liên kết nhiều-nhiều giữa Order và Voucher
-CREATE TABLE Order_Voucher (
-    id INT PRIMARY KEY IDENTITY,
-    order_id INT,
-    voucher_id INT,
-    discount_amount DECIMAL(18, 2),
-    FOREIGN KEY (order_id) REFERENCES Orders(id),
-    FOREIGN KEY (voucher_id) REFERENCES Voucher(id)
-);
-ALTER TABLE Order_Voucher
-ADD userid int NOT NULL;
+
 
 

@@ -47,12 +47,12 @@ export default function ForgotPasswordForm() {
         p={6}
         my={12}>
         <Heading lineHeight={1.1} fontSize={{ base: '2xl', md: '3xl' }}>
-          Quên mật khẩu?
+          Forgot Password?
         </Heading>
         <Text
           fontSize={{ base: 'sm', sm: 'md' }}
           color={useColorModeValue('gray.800', 'gray.400')}>
-          Bạn sẽ nhận được một email với đường dẫn để đặt lại mật khẩu của bạn.
+          You will receive an email to get your code and change your password.
         </Text>
         <FormControl id="email">
           <Input
@@ -68,7 +68,7 @@ export default function ForgotPasswordForm() {
             colorScheme='teal'
             onClick={handleCheckEmail}
             >
-            Đặt lại mật khẩu
+            Change password
           </Button>
         </Stack>
       </Stack>

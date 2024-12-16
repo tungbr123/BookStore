@@ -33,7 +33,8 @@ import {
 import { SearchIcon } from "@chakra-ui/icons";
 import axios from "axios";
 import { useSelector } from "react-redux";
-
+import { useCheckOut } from "@/checkoutContext";
+import { useRouter } from "next/navigation";
 const PurchaseHistory = () => {
   const [purchases, setPurchases] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -44,11 +45,14 @@ const PurchaseHistory = () => {
   const [currentProduct, setCurrentProduct] = useState(null); // Store current product for review
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
-
   const loggedUser = useSelector((state) => state.auth);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(0); // Trang hiện tại
   const [pageSize, setPageSize] = useState(10); // Số đơn hàng trên mỗi trang
+  const [reviewOnProduct, setReviewOnProduct] = useState([])
+  const [isReviewd, setIsReviewd] = useState(false)
+  const [check, setCheck] = useCheckOut();
+  const router = useRouter();
   useEffect(() => {
     const fetchPurchases = async () => {
       try {
@@ -59,8 +63,10 @@ const PurchaseHistory = () => {
             size: pageSize,
             status: filter, // Chỉ thêm trạng thái nếu không phải "all"
           },
+          headers: {
+            'Content-Type': 'application/json; charset=UTF-8',  // Đảm bảo mã hóa UTF-8 cho yêu cầu
+          },
         });
-        console.log(response)
         const ordersPage = response.data.data;
         setPurchases(ordersPage);
         setTotalPages(ordersPage[0].totalPages);
@@ -71,6 +77,21 @@ const PurchaseHistory = () => {
     };
     fetchPurchases();
   }, [loggedUser.userid, filter, currentPage, pageSize]); // Refetch khi các state này thay đổi
+
+
+  const fetchReviewsByProductId = async () => {
+    try {
+      // Lấy thông tin các sản phẩm đã review
+      const reviewedResponse = await axios.get(`http://localhost:8080/getAllReviewsByUsers?userid=${loggedUser.userid}`);
+      const reviewedProducts = reviewedResponse.data.data;
+      setReviewOnProduct(reviewedProducts);
+    } catch (error) {
+      console.error("Failed to fetch purchases:", error);
+    }
+  };
+  useEffect(() => {
+    fetchReviewsByProductId();
+  }, [loggedUser.userid, isReviewd]);
 
   const handleViewDetails = (order) => {
     setSelectedOrder(order);
@@ -119,12 +140,18 @@ const PurchaseHistory = () => {
     onOpen(); // Mở modal đánh giá
   };
 
+  const handleReorder = () => {
+    setCheck(selectedOrder.orderItems)
+    router.push("/checkout")
+  }
   const handleSubmitReview = async () => {
     try {
+      setIsReviewd(true)
       const response = await axios.post("http://localhost:8080/addReview", {
         productid: currentProduct.productid,
         userid: loggedUser.userid,
         stars: rating,
+        orderid: selectedOrder.id,
         content: reviewContent,
       });
       if (response.data.statusCode === "200") {
@@ -135,6 +162,7 @@ const PurchaseHistory = () => {
           duration: 3000,
           isClosable: true,
         });
+        fetchReviewsByProductId();
         setReviewContent("");
         setRating(5);
         setCurrentProduct(null); // Reset current product after review
@@ -158,7 +186,7 @@ const PurchaseHistory = () => {
       });
     }
   };
-
+  console.log(selectedOrder)
   const filteredPurchases = (purchases || []).filter((purchase) => {
     if (filter !== "all" && purchase.status !== filter) {
       return false;
@@ -222,7 +250,7 @@ const PurchaseHistory = () => {
                   <Td>{purchase.date_order}</Td>
                   <Td>{purchase.status}</Td>
                   <Td>{purchase.phone}</Td>
-                  <Td>{purchase.address}</Td>
+                  <Td style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>{purchase.address}</Td>
                   <Td>{purchase.amountFromUser}</Td>
                   <Td>
                     <Flex>
@@ -280,20 +308,21 @@ const PurchaseHistory = () => {
             <ModalHeader>Order Details (Order ID: {selectedOrder.id})</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              {selectedOrder.orderItems &&
-                selectedOrder.orderItems.map((item, index) => (
-                  <Flex key={index} mb={4} align="center">
-                    <Image boxSize="50px" src={item.image} alt={item.name} />
-                    <Box ml={4}>
-                      <p>{item.name}</p>
-                      <p>Quantity: {item.count}</p>
-                      <p style={{ color: "green", fontSize: "0.9rem" }}>
-                        Discount On Vouchers:{" "}
-                        {selectedOrder.discount_value_vouchers}
-                      </p>
-                    </Box>
-                    {/* Show 'Review' button only if order status is 'completed' */}
-                    {selectedOrder.status === "completed" && (
+              {selectedOrder.orderItems.map((item, index) => (
+                <Flex key={index} mb={4} align="center">
+                  <Image boxSize="50px" src={item.image} alt={item.name} />
+                  <Box ml={4}>
+                    <p>{item.name}</p>
+                    <p>Quantity: {item.count}</p>
+                  </Box>
+                  {selectedOrder.status === "completed" && (
+                    reviewOnProduct.some((review) => review.productid === item.productid && review.orderid === selectedOrder.id) ? (
+                      // Hiển thị "Reviewed" nếu đã đánh giá sản phẩm
+                      <Text color="green.500" fontWeight="bold" ml={4}>
+                        Reviewed
+                      </Text>
+                    ) : (
+                      // Hiển thị nút "Review" nếu chưa đánh giá
                       <Button
                         size="sm"
                         colorScheme="blue"
@@ -302,11 +331,67 @@ const PurchaseHistory = () => {
                       >
                         Review
                       </Button>
-                    )}
-                  </Flex>
+                    )
+                  )}
+                </Flex>
+              ))}
 
-                ))}
+              {selectedOrder.status === "completed" && (
+
+                <Flex mt={4} justify="center">
+                  {selectedOrder.is_confirmed_user === 0 ? (
+                    <Button
+                      colorScheme="green"
+                      onClick={async () => {
+                        try {
+                          const response = await axios.put(`http://localhost:8080/confirmOrderFromUser?orderid=${selectedOrder.id}`);
+                          if (response.data.statusCode === "200") {
+                            toast({
+                              title: "Order Confirmed",
+                              description: "You have confirmed receipt of the order.",
+                              status: "success",
+                              duration: 3000,
+                              isClosable: true,
+                            });
+                            setSelectedOrder({ ...selectedOrder, is_confirmed_user: 1 });
+                          } else {
+                            toast({
+                              title: "Failed to Confirm",
+                              description: response.data.message,
+                              status: "error",
+                              duration: 3000,
+                              isClosable: true,
+                            });
+                          }
+                        } catch (error) {
+                          console.error("Failed to confirm receipt:", error);
+                          toast({
+                            title: "Error",
+                            description: "An error occurred while confirming receipt.",
+                            status: "error",
+                            duration: 3000,
+                            isClosable: true,
+                          });
+                        }
+                      }}
+                    >
+                      Received Order
+                    </Button>
+                  ) : (
+                    <Button colorScheme="blue" onClick={handleReorder}>
+                      Buy Again
+                    </Button>
+                  )}
+                </Flex>
+              )}
             </ModalBody>
+
+            <Box ml={4}>
+              <p style={{ color: "green", fontSize: "0.9rem" }}>
+                Discount On Vouchers:{" "}
+                {selectedOrder.discount_value_vouchers}
+              </p>
+            </Box>
             <ModalFooter>
               <Button variant="ghost" onClick={onClose}>
                 Close

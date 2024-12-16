@@ -30,6 +30,7 @@ import com.example.demo.Repository.DeliveryRepository;
 import com.example.demo.Repository.OrderVoucherRepository;
 import com.example.demo.Repository.OrderitemRepository;
 import com.example.demo.Repository.OrdersRepository;
+import com.example.demo.Repository.ProductAuthorRepository;
 import com.example.demo.Repository.ProductRepository;
 import com.example.demo.Repository.UserRepository;
 import com.example.demo.Service.EmailService;
@@ -58,10 +59,11 @@ public class OrderServiceImpl implements OrderService {
 	private OrderVoucherRepository orderVoucherRepository;
 	@Autowired
 	private EmailService emailService;
-
+	@Autowired
+	private ProductAuthorRepository productAuthorRepository;
 	public ApiResponse<Object> addOrder(OrderRequest request) {
 		long millis = System.currentTimeMillis();
-		java.sql.Date date = new java.sql.Date(millis);
+		java.sql.Timestamp date = new java.sql.Timestamp(millis);
 		var order = Orders.builder().userid(request.getUserid()).deliveryid(1).address(request.getAddress())
 				.phone(request.getPhone()).is_paid_before(request.getIs_paid_before())
 				.money_from_user(request.getMoney_from_user()).status("pending").date_order(date).build();
@@ -212,6 +214,7 @@ public class OrderServiceImpl implements OrderService {
 				orderResponse.setUserid(order.getUserid());
 				orderResponse.setAmountFromUser(order.getMoney_from_user());
 				orderResponse.setDiscount_value_vouchers(totalDiscountOnOrder);
+				orderResponse.setIs_confirmed_user(order.getIs_confirmed_user());
 				orderResponse.setTotalPages(totalPages);
 				// Lấy danh sách sản phẩm trong đơn hàng
 				List<Orderitem> orderItems = orderitemRepository.findByOrderid(order.getId());
@@ -309,6 +312,7 @@ public class OrderServiceImpl implements OrderService {
 				orderResponse.setId(order.getId());
 				orderResponse.setStatus(order.getStatus());
 				orderResponse.setDate_order(order.getDate_order());
+				orderResponse.setIs_confirmed_user(order.getIs_confirmed_user());
 				orderResponse.setAmountFromUser(order.getMoney_from_user());
 				orderResponse.setDiscount_value_vouchers(totalDiscountOnOrder);
 				orderResponse.setTotalPages(totalPages);
@@ -468,7 +472,24 @@ public class OrderServiceImpl implements OrderService {
 					.data(null).build();
 		}
 	}
-
+	@Override
+	public ApiResponse<Object> confirmOrderFromUser(Long orderid) {
+		try {
+			Optional<Orders> optionalOrder = orderRepository.findById(orderid);
+			if (optionalOrder.isPresent()) {
+				Orders order = optionalOrder.get();
+					order.setIs_confirmed_user(1);
+					orderRepository.save(order);
+				
+				}
+			return ApiResponse.builder().statusCode("200").message("Order confired from user successfully").data(optionalOrder)
+					.build();
+		} catch (Exception e) {
+			return ApiResponse.builder().statusCode("500").message("An error occurred while completing the order")
+					.data(null).build();
+		}
+	}
+	
 	public String buildOrderConfirmationEmailWithProducts(_User user, List<OrderitemResponse> orderItems) {
 		String emailContent = "<div style=\"font-family:Helvetica,Arial,sans-serif;font-size:16px;margin:0;color:#0b0c0c\">\n"
 				+ "\n" + "<span style=\"display:none;font-size:1px;color:#fff;max-height:0\"></span>\n" + "\n"

@@ -24,4 +24,5 @@ public interface OrderService {
     Page<Orders> getOrdersByUserId(Long userid, int page, int size);
     ApiResponse<Object> getOrdersByUserIdAndStatus(Long userId, String status, int page, int size);
     ApiResponse<Object> getAllOrdersByUserIdAndStatus(String status, int page, int size);
+	ApiResponse<Object> confirmOrderFromUser(Long orderid);
 }

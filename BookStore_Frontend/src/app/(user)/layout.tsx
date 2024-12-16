@@ -14,8 +14,12 @@ import { Provider } from 'react-redux';
 import store from '@/store';
 import { Router } from 'react-router';
 import { CartProvider } from '@/CartContext';
+
+import { WishListProvider } from '@/WishlistContext';
+import { RecentlyViewedProductsProvider } from '@/RecentlyViewedProductsContext';
 import { CheckOutProvider } from '@/checkoutContext';
 import { CategoryProvider } from '@/CategoryContext';
+import { DeliveryInfoContext, DeliveryInfoProvider } from '@/context';
 
 export default function RootLayout({
   children,
@@ -35,15 +39,21 @@ export default function RootLayout({
           <CacheProvider>
             <ChakraProvider theme={theme}>
               <AppContextProvider>
-                <CartProvider>
-                  <CheckOutProvider>
-                    <CategoryProvider>
-                      <Navbar />
-                      {children}
-                      <Footer />
-                    </CategoryProvider>
-                  </CheckOutProvider>
-                </CartProvider>
+                <DeliveryInfoProvider>
+                  <RecentlyViewedProductsProvider>
+                    <WishListProvider>
+                      <CartProvider>
+                        <CheckOutProvider>
+                          <CategoryProvider>
+                            <Navbar />
+                            {children}
+                            <Footer />
+                          </CategoryProvider>
+                        </CheckOutProvider>
+                      </CartProvider>
+                    </WishListProvider>
+                  </RecentlyViewedProductsProvider>
+                </DeliveryInfoProvider>
               </AppContextProvider>
             </ChakraProvider>
           </CacheProvider>

@@ -1,6 +1,7 @@
 package com.example.demo.Entity;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 
 import jakarta.persistence.Column;
@@ -50,5 +51,8 @@ public class Orders {
 	private String status;
 
     @Column(name = "date_order")
-	private Date date_order;
+	private Timestamp date_order;
+    
+    @Column(name = "is_confirmed_user")
+    private int is_confirmed_user;
 }

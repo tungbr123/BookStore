@@ -36,7 +36,7 @@ export const Sidebar = () => {
             <Link href="/admin/orders" passHref style={{ textDecoration: 'none' }}>
               <Flex align="center">
                 <Icon as={FiHome} fontSize="16" mr="4" />
-                <Text>Quản lý Đơn hàng</Text>
+                <Text>Order Management</Text>
               </Flex>
             </Link>
           </Flex>
@@ -44,7 +44,7 @@ export const Sidebar = () => {
             <Link href="/admin/products" passHref style={{ textDecoration: 'none' }}>
               <Flex align="center">
                 <Icon as={FiBox} fontSize="16" mr="4" />
-                <Text>Quản lý Sản phẩm</Text>
+                <Text>Product Management</Text>
               </Flex>
             </Link>
           </Flex>
@@ -52,7 +52,7 @@ export const Sidebar = () => {
             <Link href="/admin/revenue" passHref style={{ textDecoration: 'none' }}>
               <Flex align="center">
                 <Icon as={FiDollarSign} fontSize="16" mr="4" />
-                <Text>Thống kê Doanh thu</Text>
+                <Text>Revenue Statistics</Text>
               </Flex>
             </Link>
           </Flex>
@@ -60,7 +60,7 @@ export const Sidebar = () => {
             <Link href="/admin/users" passHref style={{ textDecoration: 'none' }}>
               <Flex align="center">
                 <Icon as={FiUsers} fontSize="16" mr="4" />
-                <Text>Quản lý Người dùng</Text>
+                <Text>User Management</Text>
               </Flex>
             </Link>
           </Flex>
@@ -68,7 +68,7 @@ export const Sidebar = () => {
             <Link href="/admin/vouchers" passHref style={{ textDecoration: 'none' }}>
               <Flex align="center">
                 <Icon as={BiCollection} fontSize="16" mr="4" />
-                <Text>Quản lý Vouchers</Text>
+                <Text>Voucher Management</Text>
               </Flex>
             </Link>
           </Flex>

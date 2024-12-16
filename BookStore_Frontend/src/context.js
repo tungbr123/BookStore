@@ -13,57 +13,70 @@ function DeliveryInfoProvider({ children }) {
     address: "",
     name: "",
   });
+  const LoadUserInformation = async () => {
+    try {
+      const responseUser = await api.get(
+        `getUserById?userid=${loggedUser.userid}`,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const responseUserAddress = await api.get(
+        `getAddressByUserId/${loggedUser.userid}`,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (
+        responseUser.status === 200 &&
+        responseUserAddress.status === 200
+      ) {
+        const data1 = responseUser.data;
+        const data2 = responseUserAddress.data;
+
+        // Xử lý hiển thị địa chỉ
+        // Kiểm tra nếu `data2` là null hoặc rỗng
+        if (!data2 || data2.length === 0) {
+          setState({
+            name: data1.lastname + " " + data1.firstname,
+            phone: data1.phone,
+            address: "Chưa có địa chỉ", // Giá trị mặc định khi không có địa chỉ
+            email: data1.email,
+          });
+          return;
+        }
+        const formattedAddresses = data2.map((addr) => ({
+          id: addr.id,
+          fullAddress: `${addr.apart_num}, ${addr.street}, ${addr.ward}, ${addr.district}, ${addr.city}`,
+        }));
+        setState({
+          name: data1.lastname + " " + data1.firstname,
+          phone: data1.phone,
+          address: formattedAddresses[0].fullAddress,
+          email: data1.email,
+        });
+      } else {
+        showToast("Lấy thất bại");
+      }
+    } catch (error) {
+      showToast("User hiện tại tại chưa có địa chỉ");
+      console.error("Error fetching user information", error);
+    }
+  };
   useEffect(() => {
     if (loggedUser.userid) {
-      const LoadUserInformation = async () => {
-        try {
-          const responseUser = await api.get(
-            `getUserById?userid=${loggedUser.userid}`,
-            {},
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          const responseUserAddress = await api.get(
-            `getAddressByUserId/${loggedUser.userid}`,
-            {},
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          if (responseUser.status === 200 && responseUserAddress.status === 200) {
-            const data1 = responseUser.data;
-            const data2 = responseUserAddress.data;
-            // Xử lý hiển thị địa chỉ
-            const formattedAddresses = data2.map((addr) => ({
-              id: addr.id,
-              fullAddress: `${addr.apart_num}, ${addr.street}, ${addr.ward}, ${addr.district}, ${addr.city}`,
-            }));
-            setState({
-              name: data1.lastname + " " + data1.firstname,
-              phone: data1.phone,
-              address: formattedAddresses[0].fullAddress,
-              email: data1.email,
-            });
-          } else {
-            showToast("Lấy thất bại");
-          }
-        } catch (error) {
-          showToast("Lỗi khi lấy thông tin user");
-          console.error("Error fetching cart items", error);
-        }
-      
-      };
       LoadUserInformation();
     }
   }, [loggedUser.userid]);
 
   return (
-    <DeliveryInfoContext.Provider value={[state, setState]}>
+    <DeliveryInfoContext.Provider value={[state, setState, LoadUserInformation]}>
       {children}
     </DeliveryInfoContext.Provider>
   );

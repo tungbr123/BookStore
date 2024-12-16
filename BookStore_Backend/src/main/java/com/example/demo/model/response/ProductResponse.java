@@ -1,5 +1,9 @@
 package com.example.demo.model.response;
 
+import java.util.List;
+
+import com.example.demo.Entity.Category;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,7 +24,14 @@ public class ProductResponse {
 	private int quantity;
 	private int sold;
 	private String image;
-	private String category_name;
+	private List<Category> list_category;
 	private float rating;
+	private String translator;
+	private String supplier;
+	private String publisher;
+	private int published_date;
+	private int pages;
+	private int weight;
+	private List<String> author_name;
 	private int totalPages;
 }

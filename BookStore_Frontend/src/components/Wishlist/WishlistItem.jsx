@@ -9,12 +9,41 @@ import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import Link from 'next/link';
 import { getSubstring } from '@/helpers';
+import { useWishList } from '@/WishlistContext';
+import { useCart } from '@/CartContext';
 
 export const WishlistItem = ({ item }) => {
   const { addItem, removeItem, isAdded } = useContext(AppConText);
   const router = useRouter();
   const loggedUser = useSelector((state) => state.auth);
+  const {wishlist, setWishlist, fetchWishlistitem} = useWishList();
+  const {cart, setCart, updateItemCount } = useCart();
 
+  const fetchCartItems = async () => {
+    try {
+      const response = await api.get(`getCartItem?userid=${loggedUser.userid}`, {}, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (response.status === 200) {
+        const data = response.data.data
+        if (Array.isArray(data)) {
+          setCart(data); // Assuming you have a setCart function
+        }
+        else
+          console.log(data)
+
+      } else {
+        showToast("Lấy thất bại");
+        setCart([])
+      }
+    } catch (error) {
+      showToast("Lỗi khi lấy cartitem");
+      console.error("Error fetching cart items", error);
+      setCart([])
+    };
+  }
   const handleAddToCart = async () => {
     if (loggedUser.token) {
       try {
@@ -40,15 +69,16 @@ export const WishlistItem = ({ item }) => {
         });
 
         if (responseCart.status === 200) {
+          fetchCartItems()
           showToast('Đã thêm vào giỏ hàng thành công');
         } else {
           const message = 'Thêm giỏ hàng thất bại';
-          showToast(message, 1);
+          showToast(message);
           throw new Error(message);
         }
       } catch (error) {
         const message = 'Đã xảy ra lỗi, vui lòng thử lại';
-        showToast(message, 1);
+        showToast(message);
       }
     } else {
       router.push('signin');
@@ -58,6 +88,7 @@ export const WishlistItem = ({ item }) => {
   const handleRemoveFromWishlist = async () => {
     try {
       const response = await api.delete(`removeWishlist?userId=${loggedUser.userid}&productId=${item.id}`);
+      fetchWishlistitem()
     } catch (error) {
       showToast('An error occurred while removing from wishlist');
       console.error('Error removing from wishlist', error);

@@ -38,8 +38,21 @@ public class VoucherController {
 	private VoucherService voucherService;
 	
     @GetMapping("/voucher/{userId}")
-    public ResponseEntity<?> getVoucherByUserId(@PathVariable Long userId) {
+    public ResponseEntity<?> getVoucherByUserId(@PathVariable int userId) {
         return new ResponseEntity<>(voucherService.getVouchersByUserId(userId), HttpStatus.OK);
+    }
+    @GetMapping("/getVoucherByUserIdAndStatus")
+    public ResponseEntity<?> getVoucherByUserIdAndStatus(
+    		@RequestParam int userid,
+            @RequestParam String status) {
+        return new ResponseEntity<>(voucherService.getVouchersByUserIdAndStatus(userid,status), HttpStatus.OK);
+    }
+    @GetMapping("/getUserVoucherOnProduct")
+    public ResponseEntity<?> getUserVoucherOnProduct(
+    		@RequestParam int userid,
+            @RequestParam int productid,
+            @RequestParam int voucherid) {
+        return new ResponseEntity<>(voucherService.getUserVoucherOnProduct(userid,productid,voucherid), HttpStatus.OK);
     }
     @PostMapping("/addVoucher")
     public ResponseEntity<?> addVoucher(@RequestBody VoucherRequest request){

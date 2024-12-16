@@ -7,7 +7,7 @@ import api from '@/ApiProcess/api';
 
 export const DeliveryInformation = () => {
     const loggedUser = useSelector((state) => state.auth);
-    const [state, setState] = useContext(DeliveryInfoContext);
+    const [state, setState, LoadUserInformation] = useContext(DeliveryInfoContext);
     const [addresses, setAddresses] = useState([]);  // Lưu danh sách địa chỉ
     const [address, setAddress] = useState('');
     const [phone, setPhone] = useState('');
@@ -26,8 +26,37 @@ export const DeliveryInformation = () => {
     const [cities, setCities] = useState([]);
     const [districts, setDistricts] = useState([]);
     const [wards, setWards] = useState([]);
-
     // Gọi API lấy danh sách tỉnh/thành phố
+    // Gọi API lấy danh sách địa chỉ theo userId
+    useEffect(() => {
+        if (loggedUser?.userid) {
+            const loadUserAddresses = async () => {
+                try {
+                    const response = await api.get(`getAddressByUserId/${loggedUser.userid}`, {}, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    if (response.status === 200) {
+                        const data = response.data;
+                        // Xử lý hiển thị địa chỉ
+                        const formattedAddresses = data.map((addr) => ({
+                            id: addr.id,
+                            fullAddress: `${addr.apart_num}, ${addr.street}, ${addr.ward}, ${addr.district}, ${addr.city}`
+                        }));
+                        setAddresses(formattedAddresses);
+                    } else {
+                        showToast("Lấy danh sách địa chỉ thất bại", "error");
+                    }
+                } catch (error) {
+                    showToast("Lỗi khi lấy danh sách địa chỉ", "error");
+                    console.error("Error fetching addresses", error);
+                }
+            };
+            loadUserAddresses();
+        }
+    }, [loggedUser.userid]);
+
     useEffect(() => {
         const fetchCities = async () => {
             try {
@@ -64,39 +93,22 @@ export const DeliveryInformation = () => {
         }
     };
 
-    // Gọi API lấy danh sách địa chỉ theo userId
     useEffect(() => {
-        if (loggedUser?.userid) {
-            const loadUserAddresses = async () => {
-                try {
-                    const response = await api.get(`getAddressByUserId/${loggedUser.userid}`, {}, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    });
-                    if (response.status === 200) {
-                        const data = response.data;
-                        // Xử lý hiển thị địa chỉ
-                        const formattedAddresses = data.map((addr) => ({
-                            id: addr.id,
-                            fullAddress: `${addr.apart_num}, ${addr.street}, ${addr.ward}, ${addr.district}, ${addr.city}`
-                        }));
-                        setAddresses(formattedAddresses);
-                    } else {
-                        showToast("Lấy danh sách địa chỉ thất bại", "error");
-                    }
-                } catch (error) {
-                    showToast("Lỗi khi lấy danh sách địa chỉ", "error");
-                    console.error("Error fetching addresses", error);
-                }
-            };
-            loadUserAddresses();
+        
+        if (addresses.length == 0) {
+            setIsAddingNewAddress(true); // Tự động hiển thị form thêm địa chỉ mới
         }
-    }, [loggedUser.userid]);
+        else
+        {
+            setIsAddingNewAddress(false);
+        }
+            
+    }, [addresses]);
 
     // Hàm thay đổi giá trị address
     const handleAddressChange = (e) => {
         const selectedAddress = e.target.value;
+        console.log(selectedAddress)
         if (selectedAddress === "new") {
             setIsAddingNewAddress(true);  // Hiển thị form thêm địa chỉ mới
         } else {
@@ -144,8 +156,8 @@ export const DeliveryInformation = () => {
                     fullAddress: `${addedAddress.apart_num}, ${addedAddress.street}, ${addedAddress.ward}, ${addedAddress.district}, ${addedAddress.city}`
                 };
                 setAddresses([...addresses, formattedAddress]);  // Cập nhật danh sách địa chỉ
-                setAddress(formattedAddress.id);  // Chọn địa chỉ mới vừa thêm
-                setState(prevState => ({ ...prevState, address: formattedAddress.id }));
+                setAddress(formattedAddress.fullAddress);  // Chọn địa chỉ mới vừa thêm
+                setState(prevState => ({ ...prevState, address: formattedAddress.fullAddress }));
                 setIsAddingNewAddress(false);  // Ẩn form sau khi thêm địa chỉ
                 showToast("Thêm địa chỉ thành công", "success");
             } else {
@@ -176,7 +188,6 @@ export const DeliveryInformation = () => {
         setNewWard(selectedWard.name);
         fetchWards(selectedWard.code);  // Lấy danh sách phường/xã khi chọn quận
     };
-
     return (
         <Card borderWidth="1px" borderColor="gray.200" shadow="none">
             <CardHeader>
@@ -192,9 +203,9 @@ export const DeliveryInformation = () => {
                     <Box>
                         <FormLabel>Address</FormLabel>
                         <Select onChange={handleAddressChange} value={address}>
-                            {addresses.map((addr) => (
+                            {addresses ? addresses.map((addr) => (
                                 <option key={addr.id} value={addr.fullAddress}>{addr.fullAddress}</option>
-                            ))}
+                            )) : <option value = "no address found">No Address found</option>}
                             <option value="new">Thêm địa chỉ mới</option>
                         </Select>
                     </Box>
@@ -202,10 +213,10 @@ export const DeliveryInformation = () => {
                     {/* Form thêm địa chỉ mới */}
                     {isAddingNewAddress && (
                         <Box>
-                            <FormLabel>Tỉnh/Thành phố</FormLabel>
+                            <FormLabel>City/Province</FormLabel>
                             <Select value={newCity} onChange={handleCityChange}>
                             {!newCity ? (
-                                        <option value="">Chọn thành phố</option> // Khi chưa chọn thành phố
+                                        <option value="">City/Province</option> // Khi chưa chọn thành phố
                                     ) : (
                                         <option value={newCity}>
                                             {newCity} {/* Hiển thị tên thành phố đã chọn */}
@@ -216,10 +227,10 @@ export const DeliveryInformation = () => {
                                 ))}
                             </Select>
 
-                            <FormLabel>Quận/Huyện</FormLabel>
+                            <FormLabel>District</FormLabel>
                             <Select value={newDistrict} onChange={handleDistrictChange}>
                             {!newDistrict ? (
-                                        <option value="">Chọn quận/huyện</option> // Khi chưa chọn thành phố
+                                        <option value="">District</option> // Khi chưa chọn thành phố
                                     ) : (
                                         <option value={newDistrict}>
                                             {newDistrict} {/* Hiển thị tên thành phố đã chọn */}
@@ -230,10 +241,10 @@ export const DeliveryInformation = () => {
                                 ))}
                             </Select>
 
-                            <FormLabel>Phường/Xã</FormLabel>
+                            <FormLabel>Ward</FormLabel>
                             <Select value={newWard} onChange={handleWardChange}>
                             {!newWard ? (
-                                        <option value="">Chọn phường</option> // Khi chưa chọn thành phố
+                                        <option value="">Ward</option> // Khi chưa chọn thành phố
                                     ) : (
                                         <option value={newWard}>
                                             {newWard} {/* Hiển thị tên thành phố đã chọn */}
@@ -244,10 +255,10 @@ export const DeliveryInformation = () => {
                                 ))}
                             </Select>
 
-                            <FormLabel>Đường</FormLabel>
+                            <FormLabel>Street</FormLabel>
                             <Input value={newStreet} onChange={(e) => setNewStreet(e.target.value)} placeholder="Đường" />
 
-                            <FormLabel>Số nhà</FormLabel>
+                            <FormLabel>Apart_Num</FormLabel>
                             <Input value={newApartNum} onChange={(e) => setNewApartNum(e.target.value)} placeholder="Số nhà" />
 
                             <Button mt="2" onClick={handleNewAddressSubmit}>Add Address</Button>

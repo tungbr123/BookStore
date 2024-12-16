@@ -34,6 +34,9 @@ public class Review {
     @Column(name = "content")
 	private String content;
     
+    @Column(name = "orderid")
+	private int orderid;
+    
     @Column(name = "stars")
 	private int stars;
 }

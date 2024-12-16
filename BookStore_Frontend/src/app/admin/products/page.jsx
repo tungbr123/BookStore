@@ -29,6 +29,7 @@ import {
   Select,
 } from '@chakra-ui/react';
 import axios from 'axios';
+import showToast from '@/hooks/useToast';
 
 const ProductForm = ({ products, setProducts, selectedProduct, setSelectedProduct, onClose, handleSubmitProduct }) => {
   const [name, setName] = useState('');
@@ -38,7 +39,14 @@ const ProductForm = ({ products, setProducts, selectedProduct, setSelectedProduc
   const [quantity, setQuantity] = useState(0);
   const [sold, setSold] = useState(0);
   const [image, setImage] = useState('');
-  const [category_id, setCategory_id] = useState('');
+  const [translator, setTranslator] = useState('');
+  const [supplier, setSupplier] = useState('');
+  const [publisher, setPublisher] = useState('');
+  const [publishedDate, setPublishedDate] = useState(0);
+  const [pages, setPages] = useState(0);
+  const [weight, setWeight] = useState(0);
+  const [list_category, setListCategory] = useState([])
+  const [author, setAuthor] = useState([])
 
   useEffect(() => {
     if (selectedProduct) {
@@ -49,7 +57,14 @@ const ProductForm = ({ products, setProducts, selectedProduct, setSelectedProduc
       setQuantity(selectedProduct.quantity);
       setSold(selectedProduct.sold);
       setImage(selectedProduct.image);
-      setCategory_id(selectedProduct.category_id);
+      setTranslator(selectedProduct.translator || '');
+      setSupplier(selectedProduct.supplier || '');
+      setPublisher(selectedProduct.publisher || '');
+      setPublishedDate(selectedProduct.published_date || 0);
+      setPages(selectedProduct.pages || 0);
+      setWeight(selectedProduct.weight || 0);
+      setListCategory(selectedProduct.list_category)
+      setAuthor(selectedProduct.author_name)
     }
   }, [selectedProduct]);
 
@@ -83,8 +98,14 @@ const ProductForm = ({ products, setProducts, selectedProduct, setSelectedProduc
       promotional_price: promotional_price,
       quantity,
       sold,
+      translator,
+      supplier,
+      publisher,
+      published_date: publishedDate,
+      pages,
+      weight,
       image: imageUrl,
-      category_id: category_id,
+
     };
 
     handleSubmitProduct(product);
@@ -99,7 +120,12 @@ const ProductForm = ({ products, setProducts, selectedProduct, setSelectedProduc
     setQuantity(0);
     setSold(0);
     setImage('');
-    setCategory_id('');
+    setTranslator('');
+    setSupplier('');
+    setPublisher('');
+    setPublishedDate('');
+    setPages(0);
+    setWeight(0);
     setSelectedProduct(null);
     onClose();
   };
@@ -114,53 +140,84 @@ const ProductForm = ({ products, setProducts, selectedProduct, setSelectedProduc
   return (
     <Box as="form" onSubmit={handleSubmit} mt={4} p={4} borderWidth="1px" borderRadius="lg">
       <FormControl id="name" isRequired>
-        <FormLabel>Tên sản phẩm</FormLabel>
+        <FormLabel>Product Name</FormLabel>
         <Input value={name} onChange={(e) => setName(e.target.value)} />
       </FormControl>
 
       <FormControl id="description" mt={4} isRequired>
-        <FormLabel>Mô tả</FormLabel>
+        <FormLabel>Description</FormLabel>
         <Input value={description} onChange={(e) => setDescription(e.target.value)} />
       </FormControl>
 
       <FormControl id="price" mt={4} isRequired>
-        <FormLabel>Giá</FormLabel>
+        <FormLabel>Price</FormLabel>
         <Input type="number" value={price} onChange={(e) => setPrice(parseInt(e.target.value))} />
       </FormControl>
 
       <FormControl id="promotional_price" mt={4}>
-        <FormLabel>Giá khuyến mãi</FormLabel>
+        <FormLabel>Promotional Price</FormLabel>
         <Input type="number" value={promotional_price} onChange={(e) => setPromotional_price(parseInt(e.target.value))} />
       </FormControl>
 
       <FormControl id="quantity" mt={4} isRequired>
-        <FormLabel>Số lượng</FormLabel>
+        <FormLabel>Quantity</FormLabel>
         <Input type="number" value={quantity} onChange={(e) => setQuantity(parseInt(e.target.value))} />
       </FormControl>
 
       <FormControl id="sold" mt={4}>
-        <FormLabel>Đã bán</FormLabel>
+        <FormLabel>Sold</FormLabel>
         <Input type="number" value={sold} onChange={(e) => setSold(parseInt(e.target.value))} />
       </FormControl>
 
+      <FormControl id="translator" mt={4}>
+        <FormLabel>Translator</FormLabel>
+        <Input value={translator} onChange={(e) => setTranslator(e.target.value)} />
+      </FormControl>
+
+      <FormControl id="supplier" mt={4}>
+        <FormLabel>Supplier</FormLabel>
+        <Input value={supplier} onChange={(e) => setSupplier(e.target.value)} />
+      </FormControl>
+
+      <FormControl id="publisher" mt={4}>
+        <FormLabel>Publisher</FormLabel>
+        <Input value={publisher} onChange={(e) => setPublisher(e.target.value)} />
+      </FormControl>
+
+      <FormControl id="published_date" mt={4}>
+        <FormLabel>Publish Year</FormLabel>
+        <Input type="number" value={publishedDate} onChange={(e) => setPublishedDate(e.target.value)} />
+      </FormControl>
+
+      <FormControl id="pages" mt={4}>
+        <FormLabel>Pages</FormLabel>
+        <Input type="number" value={pages} onChange={(e) => setPages(parseInt(e.target.value))} />
+      </FormControl>
+
+      <FormControl id="weight" mt={4}>
+        <FormLabel>Weight (g)</FormLabel>
+        <Input type="number" value={weight} onChange={(e) => setWeight(parseInt(e.target.value))} />
+      </FormControl>
+
       <FormControl id="image" mt={4}>
-        <FormLabel>Ảnh</FormLabel>
+        <FormLabel>Image</FormLabel>
         <Input type="file" onChange={handleImageChange} />
         {image && typeof image === 'string' ? <Image src={image} alt="Product Image" boxSize="50px" mt={2} /> : null}
       </FormControl>
 
-      <FormControl id="category_id" mt={4} isRequired>
-        <FormLabel>Danh mục</FormLabel>
-        <Input type="Text" value={category_id} onChange={(e) => setCategory_id(parseInt(e.target.value))} />
-      </FormControl>
+      {/* <FormControl id="category_id" mt={4} isRequired>
+    <FormLabel>Category</FormLabel>
+    <Input type="Text" value={category_id} onChange={(e) => setCategory_id(parseInt(e.target.value))} />
+  </FormControl> */}
 
       <Button mt={4} colorScheme="teal" type="submit">
-        {selectedProduct ? 'Cập nhật sản phẩm' : 'Thêm sản phẩm'}
+        {selectedProduct ? 'Update Product' : 'Add Product'}
       </Button>
       <Button mt={4} ml={4} onClick={resetForm}>
-        Đặt lại
+        Reset
       </Button>
     </Box>
+
   );
 };
 
@@ -169,14 +226,14 @@ const ProductTable = ({ products, onEdit, onDelete, onViewDetails }) => {
     <Table mt={8} p={4} borderWidth="1px" borderRadius="lg">
       <Thead>
         <Tr>
-          <Th>Tên sản phẩm</Th>
-          <Th>Giá</Th>
-          <Th>Giá khuyến mãi</Th>
-          <Th>Số lượng</Th>
-          <Th>Đã bán</Th>
-          <Th>Ảnh</Th>
-          <Th>Danh mục</Th>
-          <Th>Hành động</Th>
+          <Th>Product Name</Th>
+          <Th>Price</Th>
+          <Th>Promotional Price</Th>
+          <Th>Quantity</Th>
+          <Th>Sold</Th>
+          <Th>Image</Th>
+          <Th>Category</Th>
+          <Th>Actions</Th>
         </Tr>
       </Thead>
       <Tbody>
@@ -190,17 +247,21 @@ const ProductTable = ({ products, onEdit, onDelete, onViewDetails }) => {
             <Td>
               <Image src={product.image} alt={product.name} boxSize="50px" />
             </Td>
-            <Td>{product.category_name}</Td>
+            <Td>
+              {Array.isArray(product.list_category)
+                ? product.list_category.map(category => category.name).join(', ')
+                : 'No categories'}
+            </Td>
             <Td>
               <HStack spacing={2}>
                 <Button colorScheme="teal" size="sm" onClick={() => onEdit(product)}>
-                  Sửa
+                  Edit
                 </Button>
                 {/* <Button colorScheme="red" size="sm" onClick={() => onDelete(product.id)}>
-                  Xóa
-                </Button> */}
+              Delete
+            </Button> */}
                 <Button colorScheme="blue" size="sm" onClick={() => onViewDetails(product)}>
-                  Xem chi tiết
+                  View Details
                 </Button>
               </HStack>
             </Td>
@@ -208,6 +269,7 @@ const ProductTable = ({ products, onEdit, onDelete, onViewDetails }) => {
         ))}
       </Tbody>
     </Table>
+
   );
 };
 
@@ -224,7 +286,7 @@ const ProductManagement = () => {
   const [currentPage, setCurrentPage] = useState(0); // Trang hiện tại
   const [pageSize, setPageSize] = useState(5);
   const [filter, setFilter] = useState("all");
-
+  const [reset, setReset] = useState(0)
   useEffect(() => {
     // Fetch products from backend API
     const fetchProducts = async () => {
@@ -237,6 +299,11 @@ const ProductManagement = () => {
           },
         });
         const productsPage = response.data.data;
+        if(!productsPage)
+        {
+          setProducts([])
+          return;
+        }
         setProducts(productsPage); // Set products from API response
         setTotalPages(productsPage[0].totalPages);
       } catch (error) {
@@ -245,7 +312,7 @@ const ProductManagement = () => {
     };
 
     fetchProducts();
-  }, [currentPage, pageSize, filter]);
+  }, [currentPage, pageSize, filter, reset]);
 
   const handleDelete = async (id) => {
     try {
@@ -269,13 +336,33 @@ const ProductManagement = () => {
   };
 
   const handleSubmitProduct = async (product) => {
+    const apiProduct = {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      promotional_price: product.promotional_price,
+      quantity: product.quantity,
+      sold: product.sold,
+      image: product.image,
+      rating: product.rating,
+      translator: product.translator,
+      supplier: product.supplier,
+      publisher: product.publisher,
+      published_date: product.published_date,
+      pages: product.pages,
+      weight: product.weight
+    }
+    if (reset == 0)
+      setReset(1)
+    else
+      setReset(0)
     try {
       if (selectedProduct) {
-        await axios.put(`http://localhost:8080/api/product/update/${selectedProduct.id}`, product);
-        setProducts(products.map((p) => (p.id === selectedProduct.id ? product : p)));
+        await axios.put(`http://localhost:8080/api/product/update/${selectedProduct.id}`, apiProduct);
+
       } else {
-        const response = await axios.post('http://localhost:8080/api/product/create', product);
-        setProducts([...products, response.data]);
+        await axios.post('http://localhost:8080/api/product/create', product);
       }
       resetForm();
     } catch (error) {
@@ -297,19 +384,22 @@ const ProductManagement = () => {
   const filteredProducts = products.filter(product => {
     return (
       (product.name?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
-      (product.category_name?.toLowerCase() ?? '').includes(searchTerm.toLowerCase())
+      (product.list_category?.some(category =>
+        category.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      ) ?? false)
     );
   });
+
   return (
     <Container maxW="container.xl" py={4}>
-      <Heading as="h1" size="xl" mb={4} textAlign="center" color="teal.600">Quản lý sản phẩm</Heading>
-      <Flex  justifyContent="space-between"  gap={4} flexWrap="wrap">
+      <Heading as="h1" size="xl" mb={4} textAlign="center" color="teal.600">Product Management</Heading>
+      <Flex justifyContent="space-between" gap={4} flexWrap="wrap">
         <HStack mb={4}>
           <Input
-            placeholder="Tìm kiếm theo tên hoặc danh mục"
+            placeholder="Search by name or category"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            mr={4} /* Thêm margin phải để tạo khoảng cách với Select */
+            mr={4} /* Add margin-right to create space with Select */
           />
           <Select
             value={filter}
@@ -317,7 +407,7 @@ const ProductManagement = () => {
               setFilter(e.target.value);
               setCurrentPage(0);
             }}
-            w="400px" /* Điều chỉnh độ rộng Select */
+            w="400px" /* Adjust Select width */
             borderColor="teal.400"
           >
             <option value="all">All</option>
@@ -325,14 +415,13 @@ const ProductManagement = () => {
             <option value="mostSellingProducts">Most Selling Products</option>
             <option value="leastSellingProducts">Least Selling Products</option>
             <option value="mostRatingProducts">Most Rating Products</option>
-            <option value="leastRatingProducts">Least Selling Products</option>
+            <option value="leastRatingProducts">Least Rating Products</option>
           </Select>
         </HStack>
       </Flex>
 
-
       <Button colorScheme="teal" onClick={handleAddProduct}>
-        Thêm sản phẩm
+        Add Product
       </Button>
       <ProductTable
         products={filteredProducts}
@@ -360,7 +449,7 @@ const ProductManagement = () => {
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>{selectedProduct ? 'Cập nhật sản phẩm' : 'Thêm sản phẩm'}</ModalHeader>
+          <ModalHeader>{selectedProduct ? 'Update Product' : 'Add Product'}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <ProductForm
@@ -384,23 +473,31 @@ const ProductManagement = () => {
             {detailedProduct && (
               <Box>
                 <Image src={detailedProduct.image} alt={detailedProduct.name} boxSize="200px" bgSize="contain" />
-                <Text mt="1rem"><strong>Mô tả:</strong> {detailedProduct.description}</Text>
-                <Text mt="1rem"><strong>Giá:</strong> {detailedProduct.price}</Text>
-                <Text mt="1rem"><strong>Giá khuyến mãi:</strong> {detailedProduct.promotional_price}</Text>
-                <Text mt="1rem"><strong>Số lượng:</strong> {detailedProduct.quantity}</Text>
-                <Text mt="1rem"><strong>Đã bán:</strong> {detailedProduct.sold}</Text>
-                <Text mt="1rem"><strong>Danh mục:</strong> {detailedProduct.category_name}</Text>
+                <Text mt="1rem"><strong>Description:</strong> {detailedProduct.description}</Text>
+                <Text mt="1rem"><strong>Price:</strong> {detailedProduct.price}</Text>
+                <Text mt="1rem"><strong>Promotional Price:</strong> {detailedProduct.promotional_price}</Text>
+                <Text mt="1rem"><strong>Quantity:</strong> {detailedProduct.quantity}</Text>
+                <Text mt="1rem"><strong>Sold:</strong> {detailedProduct.sold}</Text>
+                <Text mt="1rem"><strong>Category:</strong> {detailedProduct.list_category.map(category => category.name).join(', ')}</Text>
+                <Text mt="1rem"><strong>Author:</strong> {detailedProduct.author_name.map(author => author).join(', ')}</Text>
+                <Text mt="1rem"><strong>Translator:</strong> {detailedProduct.translator}</Text>
+                <Text mt="1rem"><strong>Publisher:</strong> {detailedProduct.publisher}</Text>
+                <Text mt="1rem"><strong>Published Year:</strong> {detailedProduct.published_date}</Text>
+                <Text mt="1rem"><strong>Supplier:</strong> {detailedProduct.supplier}</Text>
+                <Text mt="1rem"><strong>Pages:</strong> {detailedProduct.pages}</Text>
+                <Text mt="1rem"><strong>Weight:</strong> {detailedProduct.weight}</Text>
               </Box>
             )}
           </ModalBody>
           <ModalFooter>
             <Button colorScheme="blue" mr={3} onClick={onDetailClose}>
-              Đóng
+              Close
             </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
     </Container>
+
   );
 };
 

@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Box, Flex, Stack, Link, Button, useDisclosure, HStack, Text, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
+import { Box, Flex, Stack, Link, Button, useDisclosure, HStack, Text, Menu, MenuButton, MenuList, MenuItem, useColorModeValue } from "@chakra-ui/react";
 import { cartSectionStyles, desktopNavStyles, logoSectionStyles } from "./style";
 import { AppLogo } from "../AppLogo";
 import { navItems } from "@/helpers";
+import { navCategories } from "@/helpers";
 import { Search } from "../Search/Search";
 import { Wishlist } from "../Wishlist/Wishlist";
 import { Cart } from "../Cart/Cart";
+import { CategoryMenu } from "../Category/CategoryMenu";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from '@/ApiProcess/ApiFunction/AuthFunction';
@@ -33,6 +35,7 @@ export function DesktopNav() {
                         <Link href={navItem.href}>{navItem.label}</Link>
                     </Box>
                 ))}
+                <Box><CategoryMenu/></Box>
                 <Box><Search /></Box>
             </Stack>
             <Stack
@@ -76,9 +79,13 @@ const LoggedInSection = () => {
     const handleVoucherStorage = () => {
         router.push('/profile/voucher');
     };
+    const handleChangePassword = () => {
+        router.push('/forgot-password');
+    };
     const handleAdmin = () => {
         router.push('/admin/orders');
     };
+
     return (
         <Menu>
             <MenuButton as={Button} colorScheme="teal">
@@ -90,11 +97,12 @@ const LoggedInSection = () => {
             </MenuButton>
             <MenuList>
                 {isLoggedIn.role == 1 && (
-                <MenuItem onClick={handleAdmin}>Trang chủ Admin</MenuItem>)}
-                <MenuItem onClick={handleProfile}>Quản lí hồ sơ</MenuItem>
-                <MenuItem onClick={handleAddress}>Quản lí địa chỉ</MenuItem>
-                <MenuItem onClick={handlePurchaseHistory}>Lịch sử mua hàng</MenuItem> 
-                <MenuItem onClick={handleVoucherStorage}>Kho voucher</MenuItem>              
+                    <MenuItem onClick={handleAdmin}>Admin Dashboard</MenuItem>)}
+                <MenuItem onClick={handleProfile}>Profile Management</MenuItem>
+                <MenuItem onClick={handleAddress}>Address Management</MenuItem>
+                <MenuItem onClick={handlePurchaseHistory}>Order History</MenuItem>
+                <MenuItem onClick={handleVoucherStorage}>Your Voucher</MenuItem>
+                <MenuItem onClick={handleChangePassword}>Change Your Password</MenuItem>
                 <MenuItem onClick={handleLogout}>Log out</MenuItem>
             </MenuList>
         </Menu>
@@ -106,33 +114,33 @@ const SignupSection = () => {
 
     return (
 
-            <HStack spacing={3}>
-                <Button
-                    display={{ base: 'none', md: 'inline-flex' }}
-                    fontSize={'sm'}
-                    fontWeight={600}
-                    w="100%"
-                    colorScheme="teal"
-                    variant="outline"
-                    onClick={() => {
-                        router.push('/signin')
-                    }}
-                >
-                    Sign In
-                </Button>
-                <Button
-                    display={{ base: 'none', md: 'inline-flex' }}
-                    fontSize={'sm'}
-                    fontWeight={600}
-                    w="100%"
-                    colorScheme="teal"
-                    onClick={() => {
-                        router.push('/signup')
-                    }}
-                >   
-                    Sign Up
-                </Button>
-            </HStack>
+        <HStack spacing={3}>
+            <Button
+                display={{ base: 'none', md: 'inline-flex' }}
+                fontSize={'sm'}
+                fontWeight={600}
+                w="100%"
+                colorScheme="teal"
+                variant="outline"
+                onClick={() => {
+                    router.push('/signin')
+                }}
+            >
+                Sign In
+            </Button>
+            <Button
+                display={{ base: 'none', md: 'inline-flex' }}
+                fontSize={'sm'}
+                fontWeight={600}
+                w="100%"
+                colorScheme="teal"
+                onClick={() => {
+                    router.push('/signup')
+                }}
+            >
+                Sign Up
+            </Button>
+        </HStack>
 
     )
 }

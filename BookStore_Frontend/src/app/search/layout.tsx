@@ -16,6 +16,9 @@ import { CartProvider } from '@/CartContext';
 import { CheckOutProvider } from '@/checkoutContext';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ProductDetails } from '@/features/products/ProductDetails';
+import { WishListProvider } from '@/WishlistContext';
+import { RecentlyViewedProductsProvider } from '@/RecentlyViewedProductsContext';
+import { CategoryProvider } from '@/CategoryContext';
 
 export default function RootLayout({
   children,
@@ -35,13 +38,19 @@ export default function RootLayout({
           <ChakraProvider theme={theme}>
             <Provider store={store}>
               <AppContextProvider>
+              <RecentlyViewedProductsProvider>
+              <WishListProvider>
                 <CartProvider>
                   <CheckOutProvider>
+                    <CategoryProvider>
                     <Navbar />
                     {children}
                     <Footer />
+                    </CategoryProvider>
                   </CheckOutProvider>
                 </CartProvider>
+                </WishListProvider>
+                </RecentlyViewedProductsProvider>
               </AppContextProvider>
             </Provider>
           </ChakraProvider>

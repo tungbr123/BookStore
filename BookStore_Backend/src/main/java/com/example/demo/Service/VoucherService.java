@@ -16,7 +16,7 @@ import com.example.demo.model.response.UserVoucherResponse;
 
 @Service
 public interface VoucherService {
-	ApiResponse<Object> getVouchersByUserId(Long userId);
+	ApiResponse<Object> getVouchersByUserId(int userId);
     User_Voucher addUserVoucher(User_Voucher userVoucher);
     Order_Voucher addOrderVoucher(Order_Voucher orderVoucher);   
     List<ProductVoucherResponse> getProductVoucherDetails(Long productId);
@@ -28,4 +28,6 @@ public interface VoucherService {
     ApiResponse<Object> deleteVoucher(Long id);
 	ApiResponse<Object> getAllVouchersWithPaging(int page, int size);
 	ApiResponse<Object> getUserVouchers(int userid);
+	ApiResponse<Object> getVouchersByUserIdAndStatus(int userid, String status);
+	ApiResponse<Object> getUserVoucherOnProduct(int userid, int productid, int voucherid);
 }

@@ -32,6 +32,9 @@ public class User_Voucher {
 	@Column(name="voucher_id")
 	private int voucher_id;
 	
+	@Column(name="product_id")
+	private int product_id;
+	
 	@Column(name="usage_count")
 	private int usage_count;
 	

@@ -22,9 +22,36 @@ import { useCart } from '@/CartContext';
 //   item: IItem;
 // }
 
-export const CartItem = ({ item }) => {
+export const CartItem = ({ item , userid}) => {
   const [count, setCount] = useState(item.count);
   const { cart, setCart, updateItemCount } = useCart();
+
+const fetchCartItems = async () => {
+    try {
+      const response = await api.get(`getCartItem?userid=${userid}`, {}, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (response.status === 200) {
+        const data = response.data.data
+        if (Array.isArray(data)) {
+          setCart(data); // Assuming you have a setCart function
+        }
+        else
+          console.log(data)
+
+      } else {
+        showToast("Lấy thất bại");
+        setCart([])
+      }
+    } catch (error) {
+      showToast("Lỗi khi lấy cartitem");
+      console.error("Error fetching cart items", error);
+      setCart([])
+    };
+  }
+  
 
   const increaseCount = () => {
     setCount(count + 1);
@@ -44,10 +71,19 @@ export const CartItem = ({ item }) => {
           'Content-Type': 'application/json',
         }
       },)
+      fetchCartItems();
     } catch (error) {
       showToast("Có lỗi khi xóa")
     }
   }
+  const handleCheckboxChange = (e) => {
+    e.stopPropagation(); // Ngăn chặn sự kiện click lan truyền
+    if (e.target.checked) {
+      setCheck((prev) => [...prev, item]); // Thêm sản phẩm vào danh sách
+    } else {
+      setCheck((prev) => prev.filter((checkedItem) => checkedItem.cart_itemid !== item.cart_itemid)); // Xóa sản phẩm khỏi danh sách
+    }
+  };
   return (
     <Grid
       alignItems="center"
@@ -57,7 +93,6 @@ export const CartItem = ({ item }) => {
       my="2"
     >
       <GridItem>
-        <Link href={`/products/${item.product_name}`}>
           <Image
             src={item.image}
             boxSize="40px"
@@ -65,10 +100,9 @@ export const CartItem = ({ item }) => {
             borderWidth="1px"
             borderColor="gray.300"
           />
-        </Link>
       </GridItem>
       <GridItem colSpan={{ base: 5, lg: 3 }}>
-        <Link href={`/products/${item.product_name}`}>
+        <Link href={`/products/${item.productid}`}>
           <Text>{item.product_name}</Text>
         </Link>
       </GridItem>
@@ -88,7 +122,7 @@ export const CartItem = ({ item }) => {
         </HStack>
       </GridItem>
       <GridItem textAlign="right" colSpan={{ base: 2, lg: 1 }}>
-        <Text fontWeight="bold">{item.price * item.count}</Text>
+        <Text fontWeight="bold">{item.promotional_price * item.count}</Text>
       </GridItem>
       <GridItem textAlign="right">
         <Button

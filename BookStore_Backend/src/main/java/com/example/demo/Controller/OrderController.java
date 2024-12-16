@@ -45,6 +45,10 @@ public class OrderController {
     public ResponseEntity<?> addOrder(@RequestBody OrderRequest request){
         return new ResponseEntity<>(orderService.addOrder(request), HttpStatus.OK);
     }
+    @PutMapping("/confirmOrderFromUser")
+    public ResponseEntity<?> confirmOrderFromUser(@RequestParam Long orderid){
+        return new ResponseEntity<>(orderService.confirmOrderFromUser(orderid), HttpStatus.OK);
+    }
     @PostMapping("/addOrderitem")
     public ResponseEntity<?> addOrderItem(@RequestBody List<OrderitemRequest> request){
         return new ResponseEntity<>(orderService.addOrderItem(request), HttpStatus.OK);

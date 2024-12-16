@@ -1,5 +1,7 @@
+import { useRecentlyViewedProducts } from "@/RecentlyViewedProductsContext";
 import { Box, Button, Link } from "@chakra-ui/react"
 
+const {recentlyViewed, addToRecentlyViewed } = useRecentlyViewedProducts();
 
 export const BuyNowButton = () => {
     return (

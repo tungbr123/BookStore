@@ -1,23 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import api from "@/ApiProcess/api";
+import { Box, Button, Grid, Heading, Image, Text, Stack, Spinner } from "@chakra-ui/react";
 import { useSelector } from "react-redux";
+import api from "@/ApiProcess/api";
 
 const VoucherPage = () => {
   const [vouchers, setVouchers] = useState([]);
-  const [filteredVouchers, setFilteredVouchers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState("active");
   const loggedUser = useSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchVouchers = async () => {
       try {
-        const response = await api.get(`voucher/${loggedUser.userid}`);
+        const response = await api.get(`getVoucherByUserIdAndStatus?userid=${loggedUser.userid}&status=${filter}`);
         const data = await response.data.data;
-        setVouchers(data);
-        setFilteredVouchers(data); // Set initial filtered vouchers
+        if(data)
+          setVouchers(data);
+        else
+          setVouchers([])
       } catch (error) {
         console.error("Failed to fetch vouchers:", error);
       } finally {
@@ -26,155 +28,85 @@ const VoucherPage = () => {
     };
 
     fetchVouchers();
-  }, [loggedUser.userid]);
+  }, [loggedUser.userid, filter]);
 
-  // Handle filter change
-  const handleFilterChange = (status) => {
-    setFilter(status);
-    if (status === "all") {
-      setFilteredVouchers(vouchers);
-    } else {
-      setFilteredVouchers(vouchers.filter(voucher => voucher.status === status));
-    }
-  };
+  console.log(vouchers)
 
-  if (loading) return <p>Loading...</p>;
+  if (loading)
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <Spinner size="xl" color="teal.500" />
+      </Box>
+    );
 
   return (
-    <div className="voucher-container">
-      <h1 className="page-title">Your Vouchers</h1>
+    <Box maxW="1200px" mx="auto" p={4}>
+      <Heading as="h1" size="xl" textAlign="center" mb={6}>
+        Your Vouchers
+      </Heading>
 
       {/* Filter Options */}
-      <div className="filter-bar">
-        <button
-          className={`filter-btn ${filter === "all" ? "active" : ""}`}
-          onClick={() => handleFilterChange("all")}
-        >
-          All
-        </button>
-        <button
-          className={`filter-btn ${filter === "active" ? "active" : ""}`}
-          onClick={() => handleFilterChange("active")}
-        >
-          Active
-        </button>
-        <button
-          className={`filter-btn ${filter === "expired" ? "active" : ""}`}
-          onClick={() => handleFilterChange("expired")}
-        >
-          Expired
-        </button>
-        <button
-          className={`filter-btn ${filter === "used" ? "active" : ""}`}
-          onClick={() => handleFilterChange("used")}
-        >
-          Used
-        </button>
-      </div>
+      <Stack direction="row" spacing={4} justify="center" mb={6}>
+        {["all", "active", "expired", "used"].map((status) => (
+          <Button
+            key={status}
+            colorScheme={filter == status ? "teal" : "gray"}
+            variant={filter == status ? "solid" : "outline"}
+            onClick={() => setFilter(status)}
+          >
+            {status.charAt(0).toUpperCase() + status.slice(1)}
+          </Button>
+        ))}
+      </Stack>
 
       {/* Voucher Cards */}
-      <div className="voucher-grid">
-        {filteredVouchers.map((voucher) => (
-          <div key={voucher.id} className="voucher-card">
-            <img
+      <Grid templateColumns="repeat(auto-fill, minmax(250px, 1fr))" gap={6}>
+        {vouchers.map((voucher) => (
+          <Box
+            key={voucher.user_voucher_id}
+            bg="white"
+            boxShadow="md"
+            borderRadius="md"
+            overflow="hidden"
+            _hover={{ transform: "translateY(-5px)", transition: "0.3s" }}
+          >
+            <Image
               src={voucher.image_voucher}
               alt="Voucher"
-              className="voucher-img"
+              objectFit="cover"
+              height="200px"
             />
-            <div className="voucher-details">
-              <p className="voucher-discount">
+
+            <Box p={4} textAlign="center">
+              <Text fontSize="xl" fontWeight="bold" color="teal.600">
                 {voucher.discount_value > 1
                   ? `${voucher.discount_value}đ`
                   : `${voucher.discount_value * 100}%`}
-              </p>
-              <p className="voucher-min-order">
+              </Text>
+              <Text fontSize="md" color="gray.600">
                 Min Order: {voucher.min_order_value}đ
-              </p>
-              <p className="voucher-end-date">
-                End Date: {voucher.end_date}
-              </p>
-              <p className={`voucher-status ${voucher.status}`}>
-                Status: {voucher.status}
-              </p>
-            </div>
-          </div>
+              </Text>
+              <Text fontSize="sm" color="gray.500">
+                End Date: {new Date(voucher.end_date).toLocaleDateString()}
+              </Text>
+              <Text
+                mt={2}
+                fontWeight="bold"
+                color={
+                  voucher.status === "active"
+                    ? "green.500"
+                    : voucher.status === "expired"
+                      ? "red.500"
+                      : "gray.500"
+                }
+              >
+                Status: {voucher.status.charAt(0).toUpperCase() + voucher.status.slice(1)}
+              </Text>
+            </Box>
+          </Box>
         ))}
-      </div>
-
-      <style jsx>{`
-        .voucher-container {
-          padding: 20px;
-          max-width: 1200px;
-          margin: 0 auto;
-        }
-        .page-title {
-          font-size: 2rem;
-          margin-bottom: 20px;
-          text-align: center;
-        }
-        .filter-bar {
-          display: flex;
-          justify-content: center;
-          gap: 10px;
-          margin-bottom: 20px;
-        }
-        .filter-btn {
-          background-color: #f0f0f0;
-          padding: 10px 20px;
-          border: none;
-          border-radius: 8px;
-          cursor: pointer;
-          transition: background-color 0.3s;
-        }
-        .filter-btn.active {
-          background-color: #4caf50;
-          color: white;
-        }
-        .voucher-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-          gap: 20px;
-        }
-        .voucher-card {
-          background-color: white;
-          border-radius: 12px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-          overflow: hidden;
-          transition: transform 0.3s;
-        }
-        .voucher-card:hover {
-          transform: translateY(-10px);
-        }
-        .voucher-img {
-          width: 100%;
-          height: 200px;
-          object-fit: cover;
-        }
-        .voucher-details {
-          padding: 20px;
-          text-align: center;
-        }
-        .voucher-discount,
-        .voucher-min-order,
-        .voucher-end-date {
-          font-size: 1.2rem;
-          margin: 8px 0;
-        }
-        .voucher-status {
-          font-size: 1.1rem;
-          font-weight: bold;
-        }
-        .voucher-status.active {
-          color: green;
-        }
-        .voucher-status.expired {
-          color: red;
-        }
-        .voucher-status.used {
-          color: gray;
-        }
-      `}</style>
-    </div>
+      </Grid>
+    </Box>
   );
 };
 

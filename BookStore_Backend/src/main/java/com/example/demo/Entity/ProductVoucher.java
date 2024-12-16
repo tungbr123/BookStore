@@ -18,7 +18,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-@Table(name="ProductVoucher")
+@Table(name="Product_Voucher")
 public class ProductVoucher {
 	
     @Id

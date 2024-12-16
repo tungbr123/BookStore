@@ -22,6 +22,7 @@ import api from '@/ApiProcess/api';
 import showToast from '@/hooks/useToast';
 import { useDispatch } from 'react-redux';
 import { register } from '@/ApiProcess/ApiFunction/AuthFunction';
+import { BiPhoneCall } from 'react-icons/bi';
 
 export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -31,6 +32,7 @@ export default function SignUpPage() {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({});
 
   const router = useRouter();
   const dispatch = useDispatch()
@@ -54,10 +56,36 @@ export default function SignUpPage() {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const registerAuth = await dispatch(register(firstName, lastName, email, password, CMND, phone));
+    if (validateForm()) {
+      const registerAuth = await dispatch(register(firstName, lastName, email, password, phone, CMND));
       if(registerAuth){
         router.push('/signin')
       }
+    }
+
+  
+  };
+  const validateForm = () => {
+    const newErrors = {};
+
+    // Kiểm tra trường hợp để trống
+    if (!firstName.trim()) newErrors.firstName = 'First name is required.';
+    if (!lastName.trim()) newErrors.lastName = 'Last name is required.';
+    if (!email.trim()) {
+      newErrors.email = 'Email is required.';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Email is invalid.';
+    }
+    if (!password.trim()) newErrors.password = 'Password is required.';
+    if (!phone.trim()) {
+      newErrors.phone = 'Phone number is required.';
+    } else if (!/^\d{10}$/.test(phone)) {
+      newErrors.phone = 'Phone number must be exactly 10 digits.';
+    }
+    setErrors(newErrors);
+
+    // Trả về true nếu không có lỗi
+    return Object.keys(newErrors).length === 0;
   };
   return (
     <Flex
@@ -84,24 +112,36 @@ export default function SignUpPage() {
               <Box>
                 <FormControl id="firstName" isRequired>
                   <FormLabel>First Name</FormLabel>
-                  <Input value={firstName} onChange={handleFirstNameChange} type="text" />
+                  <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} type="text" />
+              {errors.firstName && (
+                <Text color="red.500" fontSize="sm">{errors.firstName}</Text>
+              )}
                 </FormControl>
               </Box>
               <Box>
                 <FormControl id="lastName">
                   <FormLabel>Last Name</FormLabel>
                   <Input value={lastName} onChange={handleLastNameChange} type="text" />
+                  {errors.lastName && (
+                <Text color="red.500" fontSize="sm">{errors.lastName}</Text>
+              )}
                 </FormControl>
               </Box>
             </HStack>
             <FormControl id="email" isRequired>
               <FormLabel>Email address</FormLabel>
-              <Input value={email} onChange={handleEmailChange} type="email" />
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" />
+              {errors.email && (
+                <Text color="red.500" fontSize="sm">{errors.email}</Text>
+              )}
             </FormControl>
             <FormControl id="password" isRequired>
               <FormLabel>Password</FormLabel>
               <InputGroup>
-                <Input value={password} onChange={handlePasswordChange} type={showPassword ? 'text' : 'password'} />
+              <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" />
+              {errors.password && (
+                <Text color="red.500" fontSize="sm">{errors.password}</Text>
+              )}
                 <InputRightElement h={'full'}>
                   <Button
                     variant={'ghost'}
@@ -115,11 +155,14 @@ export default function SignUpPage() {
             </FormControl>
             <FormControl id="CMND" isRequired>
               <FormLabel>CMND</FormLabel>
-              <Input value={CMND} onChange={handleCMNDChange} type="text" />
+              <Input value={CMND} onChange={(e) => setCMND(e.target.value)} type="text" />
             </FormControl>
             <FormControl id="phone" isRequired>
               <FormLabel>Phone</FormLabel>
-              <Input value={phone} onChange={handlePhoneChange} type="phone" />
+              <Input value={phone} onChange={(e) => setPhone(e.target.value)} type="text" />
+              {errors.phone && (
+                <Text color="red.500" fontSize="sm">{errors.phone}</Text>
+              )}
             </FormControl>
             <Stack spacing={10} pt={2}>
               <Button onClick={handleSubmit}

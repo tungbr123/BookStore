@@ -25,12 +25,12 @@ public class ReviewServiceImpl implements ReviewService {
 	@Override
 	public ApiResponse<Object> addReview(ReviewRequest reviewRequest) {
 		try {
-			System.out.println(reviewRequest.getContent());
 			Review review = new Review();
 			review.setProductid(reviewRequest.getProductid());
 			review.setUserid(reviewRequest.getUserid());
 			review.setStars(reviewRequest.getStars());
 			review.setContent(reviewRequest.getContent());
+			review.setOrderid(reviewRequest.getOrderid());
 			reviewRepository.save(review);
 			return ApiResponse.builder().statusCode("200").message("Review submitted successfully").data(null).build();
 		} catch (Exception e) {
@@ -47,15 +47,29 @@ public class ReviewServiceImpl implements ReviewService {
 				ReviewResponse response = new ReviewResponse();
 				response.setStars(review.getStars());
 				response.setContent(review.getContent());
+				response.setOrderid(review.getOrderid());
 				// Set name and image from user id
 				_User user = userRepository.findById(review.getUserid());
 				if (user != null) {
 					response.setName(user.getFirstname());
 					response.setImage(user.getAvatar());
+					response.setUserid(user.getId());
 				}
 				responseList.add(response);
 			}
 			return ApiResponse.builder().statusCode("200").message("Get Review successfully").data(responseList)
+					.build();
+		} catch (Exception e) {
+			return ApiResponse.builder().statusCode("404").message("An error occurred while getting the review")
+					.data(null).build();
+		}
+	}
+
+	@Override
+	public ApiResponse<Object> getAllReviewsByUsers(Long userid) {
+		try {
+			List<Review> reviews= reviewRepository.findByUserid(userid);
+			return ApiResponse.builder().statusCode("200").message("Get Review successfully").data(reviews)
 					.build();
 		} catch (Exception e) {
 			return ApiResponse.builder().statusCode("404").message("An error occurred while getting the review")

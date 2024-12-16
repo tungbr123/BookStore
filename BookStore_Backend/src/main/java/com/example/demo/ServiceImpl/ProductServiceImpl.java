@@ -11,12 +11,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.Entity.Author;
 import com.example.demo.Entity.Category;
 import com.example.demo.Entity.Product;
+import com.example.demo.Entity.Product_Author;
+import com.example.demo.Entity.Product_Category;
+import com.example.demo.Repository.AuthorRepository;
 import com.example.demo.Repository.CategoryRepository;
+import com.example.demo.Repository.ProductAuthorRepository;
 import com.example.demo.Repository.ProductRepository;
+import com.example.demo.Repository.ProductCategoryRepository;
 import com.example.demo.Service.ProductService;
 import com.example.demo.model.response.ApiResponse;
+import com.example.demo.model.response.OrderResponse;
+import com.example.demo.model.response.ProductAuthorResponse;
 import com.example.demo.model.response.ProductResponse;
 
 @Service
@@ -26,7 +34,13 @@ public class ProductServiceImpl implements ProductService {
 	private ProductRepository productRepository;
 	@Autowired
 	private CategoryRepository categoryRepository;
-
+	@Autowired
+	private ProductAuthorRepository productAuthorRepository;
+	@Autowired
+	private AuthorRepository authorRepository;
+	@Autowired
+	private ProductCategoryRepository productCategoryRepository;
+	
 	@Override
 	public ApiResponse<Object> getAllProduct() {
 		try {
@@ -34,11 +48,16 @@ public class ProductServiceImpl implements ProductService {
 			List<ProductResponse> productResponseList = new ArrayList<>();
 			for (Product product : products) {
 
-				Category category = categoryRepository.findById(product.getCategory_id());
+				List<Category> categories = new ArrayList<>();
+				List<Product_Category> product_categories = productCategoryRepository.findAllByProductID(product.getId());
+				for(Product_Category product_category : product_categories) {
+					Category category = categoryRepository.findById(product_category.getCategory_id());
+					categories.add(category);
+				}
 				var productResponse = ProductResponse.builder().id(product.getId()).name(product.getName())
 						.description(product.getDescription()).price(product.getPrice())
 						.promotional_price(product.getPromotional_price()).quantity(product.getQuantity())
-						.sold(product.getSold()).image(product.getImage()).category_name(category.getName())
+						.sold(product.getSold()).image(product.getImage()).list_category(categories)
 						.rating(product.getRating()).build();
 				productResponseList.add(productResponse);
 
@@ -81,12 +100,25 @@ public class ProductServiceImpl implements ProductService {
 			List<ProductResponse> productResponseList = new ArrayList<>();
 			for (Product product : productPage) {
 
-				Category category = categoryRepository.findById(product.getCategory_id());
+				List<Category> categories = new ArrayList<>();
+				List<Product_Category> product_categories = productCategoryRepository.findAllByProductID(product.getId());
+				for(Product_Category product_category : product_categories) {
+					Category category = categoryRepository.findById(product_category.getCategory_id());
+					categories.add(category);
+				}
+				List<Product_Author> product_authors = productAuthorRepository.findAllById(product.getId());
+				List<String> authors_name= new ArrayList<>();
+				for(Product_Author product_author : product_authors) {
+					Author author = authorRepository.findAuthorById(product_author.getAuthor_id());
+					authors_name.add(author.getName());
+				}
 				var productResponse = ProductResponse.builder().id(product.getId()).name(product.getName())
 						.description(product.getDescription()).price(product.getPrice())
 						.promotional_price(product.getPromotional_price()).quantity(product.getQuantity())
-						.sold(product.getSold()).image(product.getImage()).category_name(category.getName())
-						.rating(product.getRating()).totalPages(totalPages).build();
+						.sold(product.getSold()).image(product.getImage()).list_category(categories)
+						.rating(product.getRating()).translator(product.getTranslator()).pages(product.getPages()).weight(product.getWeight())
+						.published_date(product.getPublished_date()).publisher(product.getPublisher()).supplier(product.getSupplier())
+						.totalPages(totalPages).author_name(authors_name).build();
 				productResponseList.add(productResponse);
 
 			}
@@ -110,9 +142,39 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public Product getProductByID(Long id) {
+	public ProductAuthorResponse getProductByID(Long id) {
 		Product product = productRepository.findByid(id);
-		return product;
+		ProductAuthorResponse productAuthorResponse = new ProductAuthorResponse();
+		productAuthorResponse.setId(product.getId());
+		productAuthorResponse.setName(product.getName());
+		productAuthorResponse.setDescription(product.getDescription());
+		productAuthorResponse.setPrice(product.getPrice());
+		productAuthorResponse.setPromotional_price(product.getPromotional_price());
+		productAuthorResponse.setQuantity(product.getQuantity());
+		productAuthorResponse.setSold(product.getSold());
+		productAuthorResponse.setImage(product.getImage());
+		productAuthorResponse.setRating(product.getRating());
+		productAuthorResponse.setTranslator(product.getTranslator());
+		productAuthorResponse.setPublished_date(product.getPublished_date());
+		productAuthorResponse.setPublisher(product.getPublisher());
+		productAuthorResponse.setSupplier(product.getSupplier());
+		productAuthorResponse.setPages(product.getPages());
+		productAuthorResponse.setWeight(product.getWeight());
+		List<Product_Author> product_authors = productAuthorRepository.findAllById(product.getId());	
+		List<String> authors_name= new ArrayList<>();
+		for(Product_Author product_author : product_authors) {
+			Author author = authorRepository.findAuthorById(product_author.getAuthor_id());
+			authors_name.add(author.getName());
+		}
+		List<Category> categories = new ArrayList<>();
+		List<Product_Category> product_categories = productCategoryRepository.findAllByProductID(product.getId());
+		for(Product_Category product_category : product_categories) {
+			Category category = categoryRepository.findById(product_category.getCategory_id());
+			categories.add(category);
+		}
+		productAuthorResponse.setList_category(categories);
+		productAuthorResponse.setAuthor_name(authors_name);
+		return productAuthorResponse;
 	}
 
 	@Override
@@ -133,7 +195,12 @@ public class ProductServiceImpl implements ProductService {
 			product.setQuantity(productDetails.getQuantity());
 			product.setSold(productDetails.getSold());
 			product.setImage(productDetails.getImage());
-			product.setCategory_id(productDetails.getCategory_id());
+			product.setPages(productDetails.getPages());
+			product.setTranslator(productDetails.getTranslator());
+			product.setPublisher(productDetails.getPublisher());
+			product.setPublished_date(productDetails.getPublished_date());
+			product.setSupplier(productDetails.getSupplier());
+			product.setWeight(productDetails.getWeight());
 			return productRepository.save(product);
 		} else {
 			throw new RuntimeException("Product not found with id " + id);
@@ -141,21 +208,105 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public List<Product> getTrendingProducts() {
+	public List<ProductAuthorResponse> getTrendingProducts() {
 		// TODO Auto-generated method stub
-		return productRepository.findTop5TrendingProducts();
+		List<Product> products = productRepository.findTop5TrendingProducts();
+		List<ProductAuthorResponse> result = new ArrayList<>();
+		for(Product product : products) {
+			ProductAuthorResponse productAuthorResponse = new ProductAuthorResponse();
+			productAuthorResponse.setId(product.getId());
+			productAuthorResponse.setName(product.getName());
+			productAuthorResponse.setDescription(product.getDescription());
+			productAuthorResponse.setPrice(product.getPrice());
+			productAuthorResponse.setPromotional_price(product.getPromotional_price());
+			productAuthorResponse.setQuantity(product.getQuantity());
+			productAuthorResponse.setSold(product.getSold());
+			productAuthorResponse.setImage(product.getImage());
+			productAuthorResponse.setRating(product.getRating());
+			productAuthorResponse.setTranslator(product.getTranslator());
+			productAuthorResponse.setPublished_date(product.getPublished_date());
+			productAuthorResponse.setPublisher(product.getPublisher());
+			productAuthorResponse.setSupplier(product.getSupplier());
+			productAuthorResponse.setPages(product.getPages());
+			productAuthorResponse.setWeight(product.getWeight());
+			List<Product_Author> product_authors = productAuthorRepository.findAllById(product.getId());
+			List<String> authors_name= new ArrayList<>();
+			for(Product_Author product_author : product_authors) {
+				Author author = authorRepository.findAuthorById(product_author.getAuthor_id());
+				authors_name.add(author.getName());
+			}
+			productAuthorResponse.setAuthor_name(authors_name);
+			result.add(productAuthorResponse);
+		}
+		return result;
 	}
 
 	@Override
-	public List<Product> getBestSellingProducts() {
+	public List<ProductAuthorResponse> getBestSellingProducts() {
 		// TODO Auto-generated method stub
-		return productRepository.findTop5BestSellingProducts();
+		List<Product> products = productRepository.findTop5BestSellingProducts();
+		List<ProductAuthorResponse> result = new ArrayList<>();
+		for(Product product : products) {
+			ProductAuthorResponse productAuthorResponse = new ProductAuthorResponse();
+			productAuthorResponse.setId(product.getId());
+			productAuthorResponse.setName(product.getName());
+			productAuthorResponse.setDescription(product.getDescription());
+			productAuthorResponse.setPrice(product.getPrice());
+			productAuthorResponse.setPromotional_price(product.getPromotional_price());
+			productAuthorResponse.setQuantity(product.getQuantity());
+			productAuthorResponse.setSold(product.getSold());
+			productAuthorResponse.setImage(product.getImage());
+			productAuthorResponse.setRating(product.getRating());
+			productAuthorResponse.setTranslator(product.getTranslator());
+			productAuthorResponse.setPublished_date(product.getPublished_date());
+			productAuthorResponse.setPublisher(product.getPublisher());
+			productAuthorResponse.setSupplier(product.getSupplier());
+			productAuthorResponse.setPages(product.getPages());
+			productAuthorResponse.setWeight(product.getWeight());
+			List<Product_Author> product_authors = productAuthorRepository.findAllById(product.getId());
+			List<String> authors_name= new ArrayList<>();
+			for(Product_Author product_author : product_authors) {
+				Author author = authorRepository.findAuthorById(product_author.getAuthor_id());
+				authors_name.add(author.getName());
+			}
+			productAuthorResponse.setAuthor_name(authors_name);
+			result.add(productAuthorResponse);
+		}
+		return result;
 	}
 
 	@Override
-	public List<Product> getBestDeals() {
+	public List<ProductAuthorResponse> getBestDeals() {
 		// TODO Auto-generated method stub
-		return productRepository.findTop5BestDeals();
+		List<Product> products = productRepository.findTop5BestDeals();
+		List<ProductAuthorResponse> result = new ArrayList<>();
+		for(Product product : products) {
+			ProductAuthorResponse productAuthorResponse = new ProductAuthorResponse();
+			productAuthorResponse.setId(product.getId());
+			productAuthorResponse.setName(product.getName());
+			productAuthorResponse.setDescription(product.getDescription());
+			productAuthorResponse.setPrice(product.getPrice());
+			productAuthorResponse.setPromotional_price(product.getPromotional_price());
+			productAuthorResponse.setQuantity(product.getQuantity());
+			productAuthorResponse.setSold(product.getSold());
+			productAuthorResponse.setImage(product.getImage());
+			productAuthorResponse.setRating(product.getRating());
+			productAuthorResponse.setTranslator(product.getTranslator());
+			productAuthorResponse.setPublished_date(product.getPublished_date());
+			productAuthorResponse.setPublisher(product.getPublisher());
+			productAuthorResponse.setSupplier(product.getSupplier());
+			productAuthorResponse.setPages(product.getPages());
+			productAuthorResponse.setWeight(product.getWeight());
+			List<Product_Author> product_authors = productAuthorRepository.findAllById(product.getId());
+			List<String> authors_name= new ArrayList<>();
+			for(Product_Author product_author : product_authors) {
+				Author author = authorRepository.findAuthorById(product_author.getAuthor_id());
+				authors_name.add(author.getName());
+			}
+			productAuthorResponse.setAuthor_name(authors_name);
+			result.add(productAuthorResponse);
+		}
+		return result;
 	}
 
 	@Override
@@ -165,15 +316,62 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public Page<Product> getAllProducts(Integer page, Integer size, Long categoryId, String search) {
+	public List<ProductAuthorResponse> getAllProducts(Integer page, Integer size, Long categoryId, String search) {
+		System.out.println(categoryId);
 		Pageable pageable = PageRequest.of(page, size);
-		return productRepository.findByCategoryAndSearch(categoryId, search != null ? search : "", pageable);
+		Page<Product> products = productRepository.findDistinctByCategoryAndSearch(categoryId, search != null ? search : "", pageable);
+		int totalPages = 0;
+		totalPages = products.getTotalPages();
+		List<ProductAuthorResponse> result = new ArrayList<>();
+		for(Product product : products) {
+			ProductAuthorResponse productAuthorResponse = new ProductAuthorResponse();
+			productAuthorResponse.setId(product.getId());
+			productAuthorResponse.setName(product.getName());
+			productAuthorResponse.setDescription(product.getDescription());
+			productAuthorResponse.setPrice(product.getPrice());
+			productAuthorResponse.setPromotional_price(product.getPromotional_price());
+			productAuthorResponse.setQuantity(product.getQuantity());
+			productAuthorResponse.setSold(product.getSold());
+			productAuthorResponse.setImage(product.getImage());
+			productAuthorResponse.setRating(product.getRating());
+			productAuthorResponse.setTranslator(product.getTranslator());
+			productAuthorResponse.setPublished_date(product.getPublished_date());
+			productAuthorResponse.setPublisher(product.getPublisher());
+			productAuthorResponse.setSupplier(product.getSupplier());
+			productAuthorResponse.setPages(product.getPages());
+			productAuthorResponse.setWeight(product.getWeight());
+			List<Product_Author> product_authors = productAuthorRepository.findAllById(product.getId());
+
+			List<String> authors_name= new ArrayList<>();
+			for(Product_Author product_author : product_authors) {
+				Author author = authorRepository.findAuthorById(product_author.getAuthor_id());
+				authors_name.add(author.getName());
+			}
+			List<Category> categories = new ArrayList<>();
+			List<Product_Category> product_categories = productCategoryRepository.findAllByProductID(product.getId());
+
+			for(Product_Category product_category : product_categories) {
+				Category category = categoryRepository.findById(product_category.getCategory_id());
+				categories.add(category);
+			}
+			productAuthorResponse.setAuthor_name(authors_name);
+			productAuthorResponse.setList_category(categories);
+			productAuthorResponse.setTotalPages(totalPages);
+			result.add(productAuthorResponse);
+		}
+		return result;
 	}
 
 	@Override
 	public List<Product> getAllProducts() {
 		// TODO Auto-generated method stub
 		return productRepository.findAll();
+	}
+
+	@Override
+	public List<Product> getAllProductsByCategory(int categoryid) {
+		// TODO Auto-generated method stub
+		return productRepository.getAllProductByCategory(categoryid);
 	}
 
 }

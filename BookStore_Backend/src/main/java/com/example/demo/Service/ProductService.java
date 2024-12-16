@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.Entity.Product;
 import com.example.demo.model.response.ApiResponse;
+import com.example.demo.model.response.ProductAuthorResponse;
 import com.example.demo.model.response.ProductResponse;
 
 @Service
@@ -17,24 +18,26 @@ public interface ProductService {
 
 	public Product addProduct(Product product);
 	
-	public Product getProductByID(Long id);
+	public ProductAuthorResponse getProductByID(Long id);
 	
 	public List<Product> getAllProductByName(String name);
 	
     Product createProduct(Product product);
     Product updateProduct(Long id, Product productDetails);
     
-    List<Product> getTrendingProducts();
+    List<ProductAuthorResponse> getTrendingProducts();
     
-    List<Product> getBestSellingProducts();
+    List<ProductAuthorResponse> getBestSellingProducts();
     
-    List<Product> getBestDeals();
+    List<ProductAuthorResponse> getBestDeals();
     
     List<Product> getAllProducts();
     
     Page<Product> findAll(Pageable pageable);
     
-    Page<Product> getAllProducts(Integer page, Integer size, Long categoryId, String search);
+    List<ProductAuthorResponse> getAllProducts(Integer page, Integer size, Long categoryId, String search);
 
 	public Object getAllProductWithPaging(String filter, int size, int page);
+
+	public List<Product> getAllProductsByCategory(int categoryid);
 }

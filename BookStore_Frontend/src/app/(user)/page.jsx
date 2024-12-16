@@ -3,6 +3,7 @@ import { FeaturedProducts } from "@/features/home/FeaturedProducts";
 import { Banner } from "@/features/home/Banner";
 import { TopCategories } from "@/features/home/TopCategories";
 import { useEffect, useState } from "react";
+import { useRecentlyViewedProducts } from "@/RecentlyViewedProductsContext";
 
 export default function Home() {
   const [trendingProducts, setTrendingProducts] = useState([]);
@@ -11,6 +12,7 @@ export default function Home() {
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const {recentlyViewed, addToRecentlyViewed } = useRecentlyViewedProducts();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,11 +55,11 @@ export default function Home() {
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
-
   return (
     <div>
       <Banner />
       <TopCategories categories={categories} />
+      <FeaturedProducts title="Recently Viewed Products" products={recentlyViewed} />
       <FeaturedProducts title="Trending Products" products={trendingProducts} />
       <FeaturedProducts title="Best Deals For You" products={bestDeals} />
       <FeaturedProducts title="Best Selling Products" products={bestSellingProducts} />

@@ -28,10 +28,8 @@ public class Category  {
 	@JoinColumn(name="category_id", nullable=false)
 	private Category category_id;
 	
-	@Column(name = "image")
+	@Column(name = "image")  
 	private String image;
 	
-	@OneToMany(mappedBy="category_id")
-	private List<Product> products;
 	
 }

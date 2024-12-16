@@ -14,4 +14,5 @@ public class ReviewRequest {
     private int userid;
     private int stars;
     private String content;
+    private int orderid;
 }

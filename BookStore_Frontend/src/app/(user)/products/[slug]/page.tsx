@@ -8,7 +8,7 @@ import api from "@/ApiProcess/api";
 import { IProduct } from "@/model";
 
 const ProductDetailsPage =() =>{
-    const [product, setProduct] = useState<IProduct>(featureItems.trendingProducts[0]);
+    const [product, setProduct] = useState<IProduct | null>(null);
 
     useEffect(() => {
       // Extract ID from the URL
@@ -28,7 +28,6 @@ const ProductDetailsPage =() =>{
   
       fetchProduct();
     }, []);
-
     return <div>
         <ProductDetails product={product} />
     </div>

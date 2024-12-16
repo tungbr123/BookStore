@@ -47,13 +47,6 @@ const UserProfile = () => {
         }
         setUser(data);
         console.log(user)
-        toast({
-          title: 'Lấy thông tin người dùng thành công',
-          description: response.data.message,
-          status: 'success',
-          duration: 3000,
-          isClosable: true,
-        });
       }
       catch (error) {
         console.error('Failed to fetch user:', error);
@@ -68,7 +61,7 @@ const UserProfile = () => {
     };
 
     fetchUser();
-  }, [loggedUser.userid, toast]);
+  }, [loggedUser.userid]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -144,60 +137,61 @@ const UserProfile = () => {
 
   return (
     <Container maxW="container.md" py={4}>
-      <Heading size="lg" mb={6}>Chỉnh sửa Hồ sơ</Heading>
-      <VStack spacing={4} align="stretch">
-        <FormControl>
-          <FormLabel>Họ</FormLabel>
-          <Input
-            name="firstname"
-            value={user.firstname || ''}
-            placeholder="Họ"
-            onChange={handleInputChange}
+    <Heading size="lg" mb={6}>Edit Profile</Heading>
+    <VStack spacing={4} align="stretch">
+      <FormControl>
+        <FormLabel>First Name</FormLabel>
+        <Input
+          name="firstname"
+          value={user.firstname || ''}
+          placeholder="First Name"
+          onChange={handleInputChange}
+        />
+      </FormControl>
+      <FormControl>
+        <FormLabel>Last Name</FormLabel>
+        <Input
+          name="lastname"
+          value={user.lastname || ''}
+          placeholder="Last Name"
+          onChange={handleInputChange}
+        />
+      </FormControl>
+      <FormControl>
+        <FormLabel>Avatar</FormLabel>
+        <HStack spacing={4}>
+          <Image
+            src={user.avatar || 'https://via.placeholder.com/100'}
+            alt="Avatar"
+            boxSize="100px"
+            borderRadius="full"
+            objectFit="cover"
           />
-        </FormControl>
-        <FormControl>
-          <FormLabel>Tên</FormLabel>
-          <Input
-            name="lastname"
-            value={user.lastname || ''}
-            placeholder="Tên"
-            onChange={handleInputChange}
-          />
-        </FormControl>
-        <FormControl>
-          <FormLabel>Avatar</FormLabel>
-          <HStack spacing={4}>
-            <Image
-              src={user.avatar || 'https://via.placeholder.com/100'}
-              alt="Avatar"
-              boxSize="100px"
-              borderRadius="full"
-              objectFit="cover"
-            />
-            <Input type="file" accept="image/*" onChange={handleAvatarChange} />
-          </HStack>
-        </FormControl>
-        <FormControl>
-          <FormLabel>Số điện thoại</FormLabel>
-          <Input
-            name="phone"
-            value={user.phone || ''}
-            placeholder="Số điện thoại"
-            onChange={handleInputChange}
-          />
-        </FormControl>
-        <FormControl>
-          <FormLabel>cmnd</FormLabel>
-          <Input
-            name="cmnd"
-            value={user.cmnd || ''}
-            placeholder="cmnd"
-            onChange={handleInputChange}
-          />
-        </FormControl>
-      </VStack>
-      <Button mt={6} colorScheme="teal" onClick={handleSubmit}>Cập nhật Hồ sơ</Button>
-    </Container>
+          <Input type="file" accept="image/*" onChange={handleAvatarChange} />
+        </HStack>
+      </FormControl>
+      <FormControl>
+        <FormLabel>Phone Number</FormLabel>
+        <Input
+          name="phone"
+          value={user.phone || ''}
+          placeholder="Phone Number"
+          onChange={handleInputChange}
+        />
+      </FormControl>
+      <FormControl>
+        <FormLabel>ID Card Number</FormLabel>
+        <Input
+          name="cmnd"
+          value={user.cmnd || ''}
+          placeholder="ID Card Number"
+          onChange={handleInputChange}
+        />
+      </FormControl>
+    </VStack>
+    <Button mt={6} colorScheme="teal" onClick={handleSubmit}>Update Profile</Button>
+  </Container>
+  
   );
 };
 

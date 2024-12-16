@@ -11,8 +11,8 @@ const ProductsPage = () => {
   const [products, setProducts] = useState<IProduct[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);
-  const [ categories, setCategories ] = useState<ICategory[]>([]);
-  const {selectedCategory, setSelectedCategory} = useCategoryContext()
+  const [categories, setCategories] = useState<ICategory[]>([]);
+  const { selectedCategory, setSelectedCategory } = useCategoryContext()
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const pageSize: number = 6;
@@ -40,8 +40,8 @@ const ProductsPage = () => {
       const url = `http://localhost:8080/api/product/getAllProductByCategory?page=${page}&size=${pageSize}${category !== null ? `&category=${category}` : ''}${search ? `&search=${search}` : ''}`;
       const response = await fetch(url);
       const data = await response.json();
-      setProducts(data.content);
-      setTotalPages(data.totalPages);
+      setProducts(data);
+      setTotalPages(data[0].totalPages);
     } catch (error) {
       console.error('Error fetching products:', error);
     }
@@ -57,6 +57,7 @@ const ProductsPage = () => {
 
   const handleCategorySelect = (categoryId: number) => {
     setSelectedCategory(categoryId === selectedCategory ? null : categoryId);
+    setCurrentPage(0)
   };
 
   const toggleSidebar = () => {
@@ -68,77 +69,77 @@ const ProductsPage = () => {
   };
 
   return (
-    <>
-      <Flex direction="column">
-        <Hero
-          heading='Sách hay bạn tốt'
-          description='Sách hay mang đến những trải nghiệm tuyệt vời nhất'
-          imageUrl="https://americastarbooks.com/wp-content/uploads/2018/01/c58f32cc-b6f2-11e7-aaab-cac091044fd5.jpg"
-          btnLabel='View all categories'
-          btnLink='/categories'
+    <Flex direction="column">
+      <Hero
+        heading='Book is a good friend'
+        description='Good book will bring wonderful experiences for you'
+        imageUrl="https://americastarbooks.com/wp-content/uploads/2018/01/c58f32cc-b6f2-11e7-aaab-cac091044fd5.jpg"
+        btnLabel='View all categories'
+        btnLink='/categories'
+      />
+      <Flex justify="center" align="center" my="4">
+        <Button onClick={toggleSidebar} colorScheme="blue" mr="4">
+          {isSidebarOpen ? "Collapse" : "Expand"} Sidebar
+        </Button>
+        <Input
+          placeholder="Search products"
+          value={searchQuery}
+          onChange={handleSearchChange}
+          width="50%"
         />
-        <Flex justify="center" align="center" my="4">
-          <Button onClick={toggleSidebar} colorScheme="blue" mr="4">
-            {isSidebarOpen ? "Collapse" : "Expand"} Sidebar
-          </Button>
-          <Input
-            placeholder="Search products"
-            value={searchQuery}
-            onChange={handleSearchChange}
-            width="50%"
-          />
-        </Flex>
-        <Flex>
-          <Box w={isSidebarOpen ? "20%" : "6%"} p="4" bg="gray.100" transition="width 0.3s ease">
-            {isSidebarOpen && (
-              <>
-                <Text fontSize="xl" fontWeight="bold">All Categories</Text>
-                <Box mt="2">
-                  {categories.map(category => (
-                    <Button
-                      key={category.id}
-                      onClick={() => handleCategorySelect(category.id)}
-                      variant={category.id === selectedCategory ? "solid" : "outline"}
-                      colorScheme="blue"
-                      size="sm"
-                      mb="2"
-                      w="100%"
-                      textAlign="left"
-                    >
-                      {category.name}
-                    </Button>
-                  ))}
-                </Box>
-              </>
-            )}
-          </Box>
-          <Box w={isSidebarOpen ? "75%" : "94%"} p="4">
-            <AllProducts products={products} />
-            <Flex justify="center" mt="4">
-              <Button
-                onClick={handlePrevPage}
-                disabled={currentPage === 0}
-                mr="2"
-                colorScheme="blue"
-              >
-                Previous
-              </Button>
-              <Text fontSize="md" mt="1">
-                Page {currentPage + 1} of {totalPages}
-              </Text>
-              <Button
-                onClick={handleNextPage}
-                disabled={currentPage === totalPages - 1}
-                ml="2"
-                colorScheme="blue"
-              >
-                Next
-              </Button>
-            </Flex>
-          </Box>
-        </Flex>
       </Flex>
-    </>
+      <Flex>
+        <Box position="sticky"
+          top="0" h="100vh"
+          overflowY="auto" w={isSidebarOpen ? "20%" : "6%"} p="4" bg="gray.100" transition="width 0.3s ease">
+          {isSidebarOpen && (
+            <>
+              <Text fontSize="xl" fontWeight="bold">All Categories</Text>
+              <Box mt="2">
+                {categories.map(category => (
+                  <Button
+                    key={category.id}
+                    onClick={() => handleCategorySelect(category.id)}
+                    variant={category.id === selectedCategory ? "solid" : "outline"}
+                    colorScheme="blue"
+                    size="sm"
+                    mb="2"
+                    w="100%"
+                    textAlign="left"
+                  >
+                    {category.name}
+                  </Button>
+                ))}
+              </Box>
+            </>
+          )}
+        </Box>
+        <Box w={isSidebarOpen ? "75%" : "94%"} p="4">
+          <AllProducts products={products} />
+          <Flex justify="center" mt="4">
+            <Button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+              isDisabled={currentPage === 0}
+              mr="2"
+              colorScheme="blue"
+            >
+              Previous
+            </Button>
+            <Text fontSize="md" mt="1">
+              Page {currentPage + 1} of {totalPages}
+            </Text>
+            <Button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
+              isDisabled={currentPage === totalPages - 1}
+              ml="2"
+              colorScheme="blue"
+            >
+              Next
+            </Button>
+          </Flex>
+        </Box>
+      </Flex>
+    </Flex>
   );
 };
 

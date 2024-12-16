@@ -79,16 +79,16 @@ export const register = (firstName, lastName, email, password, phone, CMND) => {
                 const data = await response.data;
                 const token = data.data.accessToken;
                 dispatch({ type: 'REGISTER_SUCCESS', payload: token });
-                showToast('Đăng ký thành công');
+                showToast('Sign up successfully');
                 return true;
             } else {
-                const message = 'Đăng ký thất bại';
+                const message = 'Failed to register';
                 showToast(message, 1);
                 throw new Error(message);
             }
         } catch (error) {
             dispatch({ type: 'REGISTER_FAILURE', payload: error.message });
-            const message = 'Đã xảy ra lỗi khi đăng ký tài khoản. Vui lòng thử lại sau.';
+            const message = 'Errors while registering. Please try again';
             showToast(message, 1);
             return false;
         }
@@ -107,11 +107,11 @@ export const send_forgot_password = (email) => {
                 },
             });
             if (response.status === 200) {
-                showToast('Sang email của bạn để lấy mã code');
+                showToast('View your email to receive your code');
                 return true;
             } 
         } catch (error) {
-            const message = 'Vui lòng kiểm tra lại email!';
+            const message = 'Check your email!';
             showToast(message, 1);
             return false;
         }
@@ -132,11 +132,11 @@ export const reset_password = (token, newPassword) => {
                 },
             });
             if (response.status === 200) {
-                showToast('Đặt lại mật khẩu thành công');
+                showToast('Password reset successully!');
                 return true;
             } 
         } catch (error) {
-            const message = 'Vui lòng kiểm tra lại mã code!';
+            const message = 'Please check your code accurately!';
             showToast(message, 1);
             return false;
         }

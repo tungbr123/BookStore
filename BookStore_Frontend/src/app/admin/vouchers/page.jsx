@@ -88,7 +88,7 @@ const VoucherManagement = () => {
                 const voucherResponse = await api.get("getAllProductVoucher");
                 const data = voucherResponse.data.data
                 const filteredProducts = data.filter(
-                    (pv) => pv.voucher_id === currentVoucherId
+                    (pv) => pv.voucher_id == currentVoucherId
                 );
                 setProductVoucherList(filteredProducts.map((pv) => pv.product_id));
             } catch (error) {
@@ -102,21 +102,25 @@ const VoucherManagement = () => {
         };
 
         fetchProducts();
-    }, [selectedProducts]);
+    }, [selectedProducts, currentVoucherId]);
     // Filter Logic
     useEffect(() => {
         if (statusFilter === "all") {
             setFilteredVouchers(vouchers);
         } else {
             const today = new Date();
-            setFilteredVouchers(
-                vouchers.filter((voucher) => {
+            if(statusFilter ==="active"){ 
+                setFilteredVouchers(vouchers.filter((voucher) => {
                     const endDate = new Date(voucher.end_date);
-                    return statusFilter === "active"
-                        ? endDate >= today
-                        : endDate < today;
-                })
-            );
+                    return endDate >= today
+                }))
+            }
+            else{              
+                setFilteredVouchers(vouchers.filter((voucher) => {
+                    const endDate = new Date(voucher.end_date);
+                    return endDate < today
+                }))
+            }
         }
     }, [statusFilter, filteredVouchers]);
     // Handle Add Voucher to Products

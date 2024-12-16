@@ -37,7 +37,7 @@ export const ReviewItems = () => {
                             </Flex>
                             <Box textAlign="right">
                                 <Text fontWeight="bold" fontSize={{ base: 'md', lg: 'lg' }}>
-                                    {item.price}
+                                    {item.promotional_price}
                                 </Text>
                                 <Text fontSize={{ base: 'sm', lg: 'md' }}>
                                     Quantity: {item.count}

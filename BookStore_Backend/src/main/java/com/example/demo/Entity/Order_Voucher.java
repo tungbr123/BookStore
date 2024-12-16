@@ -36,4 +36,4 @@ public class Order_Voucher {
 	
 	@Column(name ="userid")
 	private int userid;
-}
+} 

@@ -19,4 +19,6 @@ public class ReviewResponse {
     private String image;
     private int stars;
     private String content;
+    private int orderid;
+    private Long userid;
 }
