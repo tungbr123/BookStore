@@ -69,6 +69,10 @@ const RevenueDashboard = () => {
       const dataRevenue = {
         getTotalRevenue: response.data.data.getTotalRevenue,
         getAllOrderQuantity: response.data.data.getAllOrderQuantity,
+        getAllOrderQuantityByPending: response.data.data.getAllOrderQuantityByPending,
+        getAllOrderQuantityByDelivering: response.data.data.getAllOrderQuantityByDelivering,
+        getAllOrderQuantityByCompleted: response.data.data.getAllOrderQuantityByCompleted,
+        getAllOrderQuantityByCanceled: response.data.data.getAllOrderQuantityByCanceled,
         getRevenueByDelivering: response.data.data.getRevenueByDelivering,
         getRevenueByPending: response.data.data.getRevenueByPending,
         getRevenueByCanceled: response.data.data.getRevenueByCanceled,
@@ -144,7 +148,7 @@ const RevenueDashboard = () => {
     labels: monthlyRevenue.map(item => item.month),
     datasets: [
       {
-        label: 'Doanh thu',
+        label: 'Revenue',
         data: monthlyRevenue.map(item => item.revenue),
         borderColor: 'rgba(75, 192, 192, 1)',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -156,17 +160,17 @@ const RevenueDashboard = () => {
 
   // Data for Bar Chart (Revenue by Order Status)
   const barChartData = {
-    labels: ['Đang Giao', 'Đang Chờ', 'Đã Hủy', 'Hoàn Thành'],
+    labels: ['Canceled', 'Pending', 'Delivering', 'Completed'],
     datasets: [
       {
-        label: 'Doanh thu',
+        label: 'Total Money From Orders by Status',
         data: [
-          revenueData.getRevenueByDelivering,
-          revenueData.getRevenueByPending,
           revenueData.getRevenueByCanceled,
+          revenueData.getRevenueByPending,
+          revenueData.getRevenueByDelivering,
           revenueData.getRevenueByCompleted,
         ],
-        backgroundColor: [
+        backgroundColor: [  
           'rgba(255, 99, 132, 0.2)',
           'rgba(54, 162, 235, 0.2)',
           'rgba(255, 206, 86, 0.2)',
@@ -206,8 +210,20 @@ const RevenueDashboard = () => {
           <StatNumber>{Number(revenueData.getRevenueByCanceled).toLocaleString('vi-VN')}đ</StatNumber>
         </Stat>
         <Stat>
-          <StatLabel>Total Number of Orders</StatLabel>
-          <StatNumber>{revenueData.getAllOrderQuantity}</StatNumber>
+          <StatLabel>Total Orders's Number of Revenue</StatLabel>
+          <StatNumber>{revenueData.getAllOrderQuantityByCompleted}</StatNumber>
+        </Stat>
+        <Stat>
+          <StatLabel>Total Number of Orders By Pending</StatLabel>
+          <StatNumber>{revenueData.getAllOrderQuantityByPending}</StatNumber>
+        </Stat>
+        <Stat>
+          <StatLabel>Total Number of Orders By Delivering</StatLabel>
+          <StatNumber>{revenueData.getAllOrderQuantityByDelivering}</StatNumber>
+        </Stat>
+        <Stat>
+          <StatLabel>Total Number of Orders By Canceled</StatLabel>
+          <StatNumber>{revenueData.getAllOrderQuantityByCanceled}</StatNumber>
         </Stat>
       </SimpleGrid>
 

@@ -39,12 +39,19 @@ public class RevenueServiceImpl implements RevenueService {
 	public ApiResponse<Object> getRevenue() {
 		Long totalRevenue = ordersRepository.findTotalRevenue();
 		Long totalOrders = ordersRepository.countTotalOrders();
+		Long totalOrdersByPending = ordersRepository.countTotalOrdersByPending();
+		Long totalOrdersByDelivering = ordersRepository.countTotalOrdersByDelivering();
+		Long totalOrdersByCompleted = ordersRepository.countTotalOrdersByCompleted();
+		Long totalOrdersByCanceled = ordersRepository.countTotalOrdersByCanceled();
 
 		Long revenueByDelivering = ordersRepository.findRevenueByDelivering();
 		Long revenueByPending = ordersRepository.findRevenueByPending();
 		Long revenueByCanceled = ordersRepository.findRevenueByCanceled();
 		Long revenueByCompleted = ordersRepository.findRevenueByCompleted();
-
+		
+		
+		
+		
 		List<Object[]> topUserResults = ordersRepository.findTopUsersWithOrderCountAndRevenue();
 		List<UserRevenueResponse> topUsers = new ArrayList<>();
 		for (Object[] result : topUserResults) {
@@ -78,7 +85,9 @@ public class RevenueServiceImpl implements RevenueService {
 			monthlyRevenue.add(revenueByMonthResponse);
 		}
 		RevenueResponse revenueResponse = RevenueResponse.builder().getTotalRevenue(totalRevenue)
-				.getAllOrderQuantity(totalOrders).getRevenueByDelivering(revenueByDelivering)
+				.getAllOrderQuantity(totalOrders).getAllOrderQuantityByPending(totalOrdersByPending)
+				.getAllOrderQuantityByDelivering(totalOrdersByDelivering).getAllOrderQuantityByCompleted(totalOrdersByCompleted)
+				.getAllOrderQuantityByCanceled(totalOrdersByCanceled).getRevenueByDelivering(revenueByDelivering)
 				.getRevenueByPending(revenueByPending).getRevenueByCanceled(revenueByCanceled)
 				.getRevenueByCompleted(revenueByCompleted).getTop3Users(topUsers).getTop3Product(topProducts)
 				.getMonthlyRevenue(monthlyRevenue).build();

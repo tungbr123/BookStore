@@ -25,6 +25,10 @@ public class RevenueResponse {
     private Long getRevenueByPending;
     private Long getRevenueByCanceled;
     private Long getRevenueByCompleted;
+    private Long getAllOrderQuantityByPending;
+    private Long getAllOrderQuantityByDelivering;
+    private Long getAllOrderQuantityByCanceled;
+    private Long getAllOrderQuantityByCompleted;
 	private List<UserRevenueResponse> getTop3Users;
     private List<ProductRevenueResponse> getTop3Product; 
     private List<RevenueByMonthResponse> getMonthlyRevenue;

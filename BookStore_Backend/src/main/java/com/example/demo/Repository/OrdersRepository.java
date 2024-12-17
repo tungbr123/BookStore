@@ -65,10 +65,22 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
 
 	@Query(value = "SELECT SUM(o.money_from_user) FROM Orders o WHERE o.status = 'completed'", nativeQuery = true)
 	Long findRevenueByCompleted();
+	
+	@Query(value = "SELECT COUNT(*) FROM Orders where status='pending'", nativeQuery = true)
+	Long countTotalOrdersByPending();
+	
+	@Query(value = "SELECT COUNT(*) FROM Orders where status = 'delivering'", nativeQuery = true)
+	Long countTotalOrdersByDelivering();
+	
+	@Query(value = "SELECT COUNT(*) FROM Orders where status = 'completed'", nativeQuery = true)
+	Long countTotalOrdersByCompleted();
+	
+	@Query(value = "SELECT COUNT(*) FROM Orders where status='canceled'", nativeQuery = true)
+	Long countTotalOrdersByCanceled();
 
 	@Query(value = "SELECT CONVERT(varchar(7), date_order, 120) AS month_year, "
 			+ "       SUM(money_from_user) AS total_revenue " + "FROM Orders "
-			+ "WHERE date_order >= ?1 AND date_order <= ?2 " + "GROUP BY CONVERT(varchar(7), date_order, 120) "
+			+ "WHERE date_order >= ?1 AND date_order <= ?2 AND status= 'completed' " + "GROUP BY CONVERT(varchar(7), date_order, 120) "
 			+ "ORDER BY month_year", nativeQuery = true)
 	List<Object[]> findMonthlyRevenue(String startDate, String endDate);
 }
