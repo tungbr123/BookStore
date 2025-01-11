@@ -34,6 +34,8 @@ import {
 import { SearchIcon } from "@chakra-ui/icons";
 import { Image } from "cloudinary-react";
 import showToast from "@/hooks/useToast";
+import { useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
 
 const cloudinaryUrl = "https://api.cloudinary.com/v1_1/dqyfftfrb/image/upload";
 
@@ -62,6 +64,14 @@ const UserManagement = () => {
   const [pageSize, setPageSize] = useState(5);
 
   const toast = useToast();
+  const loggedUser = useSelector((state) => state.auth);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loggedUser.token || loggedUser.role != 1) {
+      router.push('/signin');
+    }
+  }, [loggedUser.token, loggedUser.role, router]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -237,6 +247,7 @@ const UserManagement = () => {
   });
 
   return (
+
     <Box p={5} borderWidth="1px" borderRadius="lg" overflow="hidden">
       <Heading as="h1" size="lg" mb={5}>
         User Management

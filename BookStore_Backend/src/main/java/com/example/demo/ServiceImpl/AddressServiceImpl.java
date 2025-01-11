@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.example.demo.Entity.Address;
 import com.example.demo.Repository.AddressRepository;
 import com.example.demo.Service.AddressService;
+import com.example.demo.model.response.ApiResponse;
 
 @Service
 public class AddressServiceImpl implements AddressService{
@@ -26,6 +27,9 @@ public class AddressServiceImpl implements AddressService{
 	}
 
 	@Override
+	
+	
+	
 	public Address updateAddress(int id, Address addressDetails) {
 		Address address = addressRepository.findById(id);
 
@@ -44,6 +48,26 @@ public class AddressServiceImpl implements AddressService{
 		Address address = addressRepository.findById(id).orElse(null);;
         addressRepository.delete(address);
 		
+	}
+
+	@Override
+	public void setDefaultAddress(int id, Long userId) {
+        List<Address> userAddresses = addressRepository.findByUserid(userId);
+
+        // Cập nhật trạng thái mặc định
+        for (Address address : userAddresses) {
+            Long addressId = address.getId();
+            if(addressId == id)
+            {
+            	address.setIs_default(1);
+            }
+            else
+            {
+            	address.setIs_default(0);
+            }
+            addressRepository.save(address);
+        }
+    
 	}
 
 }

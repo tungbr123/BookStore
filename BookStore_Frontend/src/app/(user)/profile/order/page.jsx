@@ -53,6 +53,8 @@ const PurchaseHistory = () => {
   const [isReviewd, setIsReviewd] = useState(false)
   const [check, setCheck] = useCheckOut();
   const router = useRouter();
+
+  
   useEffect(() => {
     const fetchPurchases = async () => {
       try {
@@ -78,6 +80,20 @@ const PurchaseHistory = () => {
     fetchPurchases();
   }, [loggedUser.userid, filter, currentPage, pageSize]); // Refetch khi các state này thay đổi
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(date);
+  };
+  const formatOrderDates = (orders) => {
+    return orders.map(order => ({
+      ...order,
+      date_order: formatDate(order.date_order), // Định dạng date_order
+    }));
+  };
 
   const fetchReviewsByProductId = async () => {
     try {
@@ -186,13 +202,13 @@ const PurchaseHistory = () => {
       });
     }
   };
-  console.log(selectedOrder)
   const filteredPurchases = (purchases || []).filter((purchase) => {
     if (filter !== "all" && purchase.status !== filter) {
       return false;
     }
     return purchase.id.toString().includes(searchTerm);
   });
+  const formattedOrders = formatOrderDates(filteredPurchases);
   return (
     <Container maxW="container.xl" py={4}>
       <Box mb={4}>
@@ -242,8 +258,8 @@ const PurchaseHistory = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {filteredPurchases.length > 0 ? (
-              filteredPurchases.map((purchase, index) => (
+            {formattedOrders.length > 0 ? (
+              formattedOrders.map((purchase, index) => (
                 <Tr key={purchase.id} border="2px solid #3182ce">
                   <Td>{index + 1 + currentPage * pageSize}</Td>
                   <Td>{purchase.id}</Td>

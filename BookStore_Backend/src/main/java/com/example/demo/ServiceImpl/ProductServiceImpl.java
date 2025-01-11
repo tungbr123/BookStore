@@ -369,9 +369,9 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public List<Product> getAllProductsByCategory(int categoryid) {
+	public List<Product> getAllProductsByCategory(int productid) {
 		// TODO Auto-generated method stub
-		return productRepository.getAllProductByCategory(categoryid);
+		return productRepository.getAllProductByCategory(productid);
 	}
 
 }

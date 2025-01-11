@@ -34,6 +34,9 @@ import { SearchIcon } from '@chakra-ui/icons';
 import axios from 'axios';
 import { useFilter } from '@/filterContext';
 import DatePicker from 'react-datepicker';
+import { useSelector } from 'react-redux';
+import { useRouter } from 'next/navigation';
+import showToast from '@/hooks/useToast';
 
 const PurchaseManagement = () => {
   const [purchases, setPurchases] = useState([]);
@@ -45,6 +48,14 @@ const PurchaseManagement = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(0); // Trang hiện tại
   const [pageSize, setPageSize] = useState(10);
+
+  const loggedUser = useSelector((state) => state.auth);
+  const router = useRouter();
+  useEffect(() => {
+    if (!loggedUser.token || loggedUser.role != 1) {
+      router.push('/signin');
+    }
+  }, [loggedUser.token, loggedUser.role]);
 
   useEffect(() => {
     const fetchPurchases = async () => {
@@ -99,6 +110,43 @@ const PurchaseManagement = () => {
       toast({
         title: 'Order Confirmation Failed',
         description: 'An error occurred while confirming the order.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+  const handleCancelOrder = async (id) => {
+    try {
+      const response = await axios.put(`http://localhost:8080/cancel/${id}`);
+      if (response.data.statusCode === "200") {
+        toast({
+          title: 'Cancel Order',
+          description: `Order canceled successfully.`,
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+        setPurchases(prevPurchases =>
+          prevPurchases.map(purchase =>
+            purchase.id === id ? { ...purchase, status: 'canceled' } : purchase
+          )
+        );
+        onClose();
+      } else {
+        toast({
+          title: 'Order Cancellation Failed',
+          description: response.data.message,
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to cancel order:', error);
+      toast({
+        title: 'Order Cancellation Failed',
+        description: 'An error occurred while canceling the order.',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -163,7 +211,6 @@ const PurchaseManagement = () => {
       )
     );
   });
-
   return (
     <Container maxW="container.xl" py={4}>
       <Box mb={4}>
@@ -234,7 +281,7 @@ const PurchaseManagement = () => {
                       </Button>
                     </Td>
                   </Tr>
-                ))
+                )) 
               ) : (
                 <Tr>
                   <Td colSpan="8" textAlign="center" color="gray.500">
@@ -283,9 +330,9 @@ const PurchaseManagement = () => {
               <Text><strong>Total Amount:</strong> {selectedPurchase.amountFromUser}</Text>
               <Text><strong>Discount On Voucher: </strong> {selectedPurchase.discount_value_vouchers}</Text>
               {filter === 'need-confirmation' && selectedPurchase.messageStatusPending && (
-              <Text color="red.500" mt={2}>
-                {selectedPurchase.messageStatusPending}
-              </Text>
+                <Text color="red.500" mt={2}>
+                  {selectedPurchase.messageStatusPending}
+                </Text>
               )}
               <Heading size="md" mt={4}>Products:</Heading>
               {selectedPurchase.orderItems.map((item, index) => (
@@ -299,17 +346,28 @@ const PurchaseManagement = () => {
             </ModalBody>
             <ModalFooter>
               {selectedPurchase.status === 'pending' && (
-                <Button colorScheme="green" mr={3} onClick={() => handleConfirm(selectedPurchase.id)}>
-                  Confirm Order
-                </Button>
+                <>
+                  <Button colorScheme="green" mr={3} onClick={() => handleConfirm(selectedPurchase.id)}>
+                    Confirm Order
+                  </Button>
+                  <Button colorScheme="red" onClick={() => handleCancelOrder(selectedPurchase.id)}>
+                    Cancel Order
+                  </Button>
+                </>
               )}
               {selectedPurchase.status === 'delivering' && (
-                <Button colorScheme="teal" mr={3} onClick={() => handleComplete(selectedPurchase.id)}>
-                  Complete Order
-                </Button>
+                <>
+                  <Button colorScheme="teal" mr={3} onClick={() => handleComplete(selectedPurchase.id)}>
+                    Complete Order
+                  </Button>
+                  <Button colorScheme="red" onClick={() => handleCancelOrder(selectedPurchase.id)}>
+                    Cancel Order
+                  </Button>
+                </>
               )}
               <Button onClick={onClose}>Close</Button>
             </ModalFooter>
+
           </ModalContent>
         </Modal>
       )}

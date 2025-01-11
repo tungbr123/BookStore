@@ -33,12 +33,32 @@ public class CartItemServiceImpl implements CartItemService {
 
 	@Override
 	public ApiResponse<Object> addCartItem(CartItemRequest request) {
-		var cartItem = CartItem.builder().cartid(request.getCartid()).productid(request.getProductid())
-				.count(request.getCount()).build();
 		try {
-			cartItemRepository.save(cartItem);
-			var response = ApiResponse.builder().statusCode("200").message("Add CartItem Sucessfully").build();
-			return response;
+			var existingCartItem = cartItemRepository.findByCartidAndProductid(request.getCartid(), request.getProductid());
+			if (existingCartItem != null) {
+	            // Nếu đã tồn tại, cập nhật lại số lượng
+	            existingCartItem.setCount(existingCartItem.getCount() + request.getCount());
+	            cartItemRepository.save(existingCartItem);
+
+	            return ApiResponse.builder()
+	                    .statusCode("200")
+	                    .message("Updated CartItem count successfully")
+	                    .build();
+	        } else {
+	            // Nếu chưa tồn tại, thêm mới CartItem
+	            var cartItem = CartItem.builder()
+	                    .cartid(request.getCartid())
+	                    .productid(request.getProductid())
+	                    .count(request.getCount())
+	                    .build();
+
+	            cartItemRepository.save(cartItem);
+
+	            return ApiResponse.builder()
+	                    .statusCode("200")
+	                    .message("Add CartItem successfully")
+	                    .build();
+	        }
 
 		} catch (Exception e) {
 			return ApiResponse.builder().statusCode("401").message("Add failed").build();

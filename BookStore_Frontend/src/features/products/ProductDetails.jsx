@@ -52,7 +52,7 @@ export const ProductDetails = ({ product }) => {
         useEffect(() => {
             const fetchSameCategoryProducts = async () => {
                 try {
-                    const response = await axios.get(`http://localhost:8080/api/product/getAllProductsByCategory?categoryid=${product.category.id}`);
+                    const response = await axios.get(`http://localhost:8080/api/product/getAllProductsByCategory?productid=${product.id}`);
                     setSameCategoryProducts(response.data);
                 } catch (error) {
                     console.error('Failed to fetch products with same category:', error);
@@ -98,7 +98,7 @@ export const ProductDetails = ({ product }) => {
                 );
                 if (voucherExists) {
                     toast({
-                        title: 'Bạn đã thu thập voucher trên sản phẩm này rồi.',
+                        title: 'You have already collected this voucher',
                         status: 'info',
                         duration: 3000,
                         isClosable: true,
@@ -112,7 +112,7 @@ export const ProductDetails = ({ product }) => {
                     };
                     await axios.post('http://localhost:8080/addUserVoucher', userVoucher);
                     toast({
-                        title: 'Voucher đã được lưu vào tài khoản của bạn!',
+                        title: 'Voucher is added to your account!',
                         status: 'success',
                         duration: 3000,
                         isClosable: true,
@@ -181,8 +181,8 @@ export const ProductDetails = ({ product }) => {
                     </Box>
         
                     <ReactStars count={5} value={product.rating} size={18} color2={colors.brand.primary} edit={false} />
-                    <Text fontWeight="bold" fontSize="2rem" textDecoration="line-through">{product.price}</Text>
                     <Text fontWeight="bold" fontSize="2rem">{product.promotional_price}</Text>
+                    <Text fontWeight="bold" fontSize="2rem" textDecoration="line-through">{product.price}</Text>
                     <Divider my="1rem" />
                     <Quantity setQuantity={(value) => setQuantity(value)} disabled={isAdded('cart', product.id)} />
                     <Divider my="1rem" />
@@ -279,7 +279,7 @@ export const ProductDetails = ({ product }) => {
                     <Review key={index} review={review} />
                 ))}
             </Grid>
-            <FeaturedProducts title="Related Products" products={featureItems.relatedProducts} />
+            {/* <FeaturedProducts title="Related Products" products={featureItems.relatedProducts} /> */}
             <FeaturedProducts title="Products With Same Category" products={sameCategoryProducts} />
         </>
         

@@ -57,6 +57,10 @@ public class OrderController {
     public ResponseEntity<?> getOrdersByUserId(@RequestParam(value = "userid") Long userid) {
         return new ResponseEntity<>(orderService.getOrdersByUserId(userid), HttpStatus.OK);
     }
+    @GetMapping("/getOrdersByUserIdNotPaging")
+    public ResponseEntity<?> getOrdersByUserIdNotPaging(@RequestParam(value = "userid") Long userid) {
+        return new ResponseEntity<>(orderService.getOrdersByUserIdNotPage(userid), HttpStatus.OK);
+    }
     @GetMapping("/getAllOrders")
     public ResponseEntity<?> getAllOrders() {
         return new ResponseEntity<>(orderService.getAllOrders(), HttpStatus.OK);

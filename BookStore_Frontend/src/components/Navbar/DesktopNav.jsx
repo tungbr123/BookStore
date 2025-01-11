@@ -100,7 +100,7 @@ const LoggedInSection = () => {
                     <MenuItem onClick={handleAdmin}>Admin Dashboard</MenuItem>)}
                 <MenuItem onClick={handleProfile}>Profile Management</MenuItem>
                 <MenuItem onClick={handleAddress}>Address Management</MenuItem>
-                <MenuItem onClick={handlePurchaseHistory}>Order History</MenuItem>
+                <MenuItem onClick={handlePurchaseHistory}>Purchase History</MenuItem>
                 <MenuItem onClick={handleVoucherStorage}>Your Voucher</MenuItem>
                 <MenuItem onClick={handleChangePassword}>Change Your Password</MenuItem>
                 <MenuItem onClick={handleLogout}>Log out</MenuItem>

@@ -33,14 +33,14 @@ export const loginClient = (email, password) => {
                 } });
                 return data.data.role;
             } else {
-                const message = 'Đăng nhập thất bại';
+                const message = 'Failed to login';
                 showToast(message, 1);
                 throw new Error(message);
             }
         } catch (error) {
 
             dispatch({ type: 'LOGIN_CLIENT_FAILURE', payload: error.message });
-            const message = 'Vui lòng kiểm tra lại tài khoản hoặc mật khẩu!';
+            const message = 'Check your account or password!';
             showToast(message, 1);
              return 0;
         }

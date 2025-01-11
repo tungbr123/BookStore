@@ -7,16 +7,19 @@ import { Footer } from '@/components/Footer';
 import { AppContextProvider } from '@/context/AppContext';
 import { Sidebar } from '@/components/Sidebar';
 import store from '@/store';
-import { Provider } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import RevenueDashboard from './revenue/page';
 import PurchaseManagement from './orders/page';
 import { FilterProvider } from '@/filterContext'
+import { useRouter } from 'next/navigation';
 
 export default function RootLayout({ children }) {
+
   return (
     <html lang="en">
       <body>
+      <Provider store={store}>
         <CacheProvider>
           <ChakraProvider theme={theme}>
             <AppContextProvider>
@@ -36,6 +39,7 @@ export default function RootLayout({ children }) {
             </AppContextProvider>
           </ChakraProvider>
         </CacheProvider>
+        </Provider>
       </body>
     </html>
   );

@@ -40,11 +40,22 @@ export const DeliveryInformation = () => {
                     if (response.status === 200) {
                         const data = response.data;
                         // Xử lý hiển thị địa chỉ
+                        const defaultAddress = data.find(addr => addr.is_default);
                         const formattedAddresses = data.map((addr) => ({
                             id: addr.id,
                             fullAddress: `${addr.apart_num}, ${addr.street}, ${addr.ward}, ${addr.district}, ${addr.city}`
                         }));
                         setAddresses(formattedAddresses);
+                        if (defaultAddress) {
+                            const defaultFormatted = `${defaultAddress.apart_num}, ${defaultAddress.street}, ${defaultAddress.ward}, ${defaultAddress.district}, ${defaultAddress.city}`;
+                            setAddress(defaultFormatted);
+                            setState(prevState => ({ ...prevState, address: defaultFormatted }));
+                        } else if (formattedAddresses.length > 0) {
+                            // Nếu không có địa chỉ mặc định, chọn địa chỉ đầu tiên
+                            const firstAddress = formattedAddresses[0].fullAddress;
+                            setAddress(firstAddress);
+                            setState(prevState => ({ ...prevState, address: firstAddress }));
+                        }
                     } else {
                         showToast("Lấy danh sách địa chỉ thất bại", "error");
                     }
@@ -162,7 +173,7 @@ export const DeliveryInformation = () => {
                 showToast("Thêm địa chỉ thành công", "success");
             } else {
                 showToast("Thêm địa chỉ thất bại", "error");
-            }
+            } 
         } catch (error) {
             showToast("Lỗi khi thêm địa chỉ", "error");
             console.error("Error adding address", error);
@@ -204,7 +215,11 @@ export const DeliveryInformation = () => {
                         <FormLabel>Address</FormLabel>
                         <Select onChange={handleAddressChange} value={address}>
                             {addresses ? addresses.map((addr) => (
-                                <option key={addr.id} value={addr.fullAddress}>{addr.fullAddress}</option>
+                                <option style={{
+                                    fontWeight: addr.is_default == 1 ? "bold" : "normal",
+                                    backgroundColor: addr.is_default == 1 ? "#f0f8ff" : "white",
+                                }}
+                                 key={addr.id} value={addr.fullAddress}>{addr.fullAddress}</option>
                             )) : <option value = "no address found">No Address found</option>}
                             <option value="new">Thêm địa chỉ mới</option>
                         </Select>

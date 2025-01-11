@@ -29,6 +29,9 @@ import {
     Checkbox,
 } from "@chakra-ui/react";
 import axios from "axios";
+import { useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import useCustomToast from "@/hooks/toast";
 
 const VoucherManagement = () => {
     const [vouchers, setVouchers] = useState([]);
@@ -48,7 +51,14 @@ const VoucherManagement = () => {
     const [currentPage, setCurrentPage] = useState(0); // Trang hiện tại
     const [pageSize, setPageSize] = useState(3);
     const toast = useToast();
-
+    const loggedUser = useSelector((state) => state.auth);
+    const router = useRouter();
+    const toast1 = useCustomToast();
+    useEffect(() => {
+      if (!loggedUser.token || loggedUser.role != 1) {
+        router.push('/signin');
+      }
+    }, [loggedUser.token, loggedUser.role, router]);
     // Fetch vouchers from backend
     useEffect(() => {
         const fetchVouchers = async () => {
@@ -243,7 +253,7 @@ const VoucherManagement = () => {
     if (loading) return <p>Loading...</p>;
 
     return (
-        <Box p={6}>
+ <Box p={6}>
             <Flex justifyContent="space-between" mb={4}>
                 <Select
                     width="200px"

@@ -39,5 +39,5 @@ public interface ProductService {
 
 	public Object getAllProductWithPaging(String filter, int size, int page);
 
-	public List<Product> getAllProductsByCategory(int categoryid);
+	public List<Product> getAllProductsByCategory(int productid);
 }

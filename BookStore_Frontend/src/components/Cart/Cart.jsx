@@ -26,6 +26,7 @@ import { useSelector } from 'react-redux';
 import api from '@/ApiProcess/api';
 import showToast from '@/hooks/useToast';
 import { useRouter } from 'next/navigation';
+import useCustomToast from "@/hooks/toast";
 
 export const Cart = () => {
   const router = useRouter();
@@ -35,17 +36,17 @@ export const Cart = () => {
   const [check, setCheck] = useCheckOut();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = useRef();
-
+  const toast = useCustomToast();
   const fetchCartItems = async () => {
     try {
       const response = await api.get(`getCartItem?userid=${loggedUser.userid}`);
       if (response.status === 200) {
         setCart(response.data.data || []);
       } else {
-        showToast("Lấy thất bại");
+        showToast("Failed to get Cartitem");
       }
     } catch (error) {
-      showToast("Lỗi khi lấy cartitem");
+      showToast("error while getting cart item");
       console.error("Error fetching cart items", error);
     }
   };
@@ -176,7 +177,7 @@ export const Cart = () => {
                   Checkout
                 </Button>
               </Box>
-              <Box fontWeight="bold">Total: $ {calculateItemsTotal(selectedItems)}</Box>
+              <Box fontWeight="bold">Total: {calculateItemsTotal(selectedItems)}đ</Box>
             </DrawerFooter>
           )}
         </DrawerContent>

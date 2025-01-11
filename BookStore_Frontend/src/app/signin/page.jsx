@@ -46,8 +46,8 @@ export default function Home() {
     if(loginAuth == 1){
       router.push('/admin/orders')
       toast({
-        title: 'Đăng nhập thành công',
-        description: `Đăng nhập thành công.`,
+        title: 'Login sucessfully',
+        description: `Login sucessfully'`,
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -56,8 +56,8 @@ export default function Home() {
     if(loginAuth == 2){
       router.push('/')
       toast({
-        title: 'Đăng nhập thành công',
-        description: `Đăng nhập thành công.`,
+        title: 'Login sucessfully',
+        description: `Login sucessfully'`,
         status: 'success',
         duration: 3000,
         isClosable: true,

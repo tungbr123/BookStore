@@ -44,9 +44,9 @@ public class ProductController {
     
     @GetMapping("/getAllProductsByCategory")
     public ResponseEntity<List<Product>> getAllProductsByCategory(
-    		@RequestParam int categoryid
+    		@RequestParam int productid
             ) {
-        return new ResponseEntity<>(productService.getAllProductsByCategory(categoryid), HttpStatus.OK);
+        return new ResponseEntity<>(productService.getAllProductsByCategory(productid), HttpStatus.OK);
     }
     
     @GetMapping("/getAllProductByPage")

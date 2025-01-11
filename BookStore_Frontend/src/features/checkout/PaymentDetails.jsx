@@ -27,6 +27,7 @@ import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
+import useCustomToast from "@/hooks/toast";
 
 export const PaymentDetails = () => {
   const router = useRouter();
@@ -50,6 +51,7 @@ export const PaymentDetails = () => {
   const [discountAmountOnVouchers, setDiscountAmountOnVouchers] = useState(0)
   const [code, setCode] = useState(""); // State để lưu giá trị từ input
   const [allVouchers, setAllVouchers] = useState(null)
+  const toast = useCustomToast()
   // Cập nhật subtotal và checkout khi check thay đổi
   useEffect(() => {
     if (check && check.length > 0) {
@@ -150,7 +152,7 @@ export const PaymentDetails = () => {
       console.log(matchingVoucher);
       setDiscountAmountOnVouchers((prev) => prev + discount);
       setSelectedVouchers((prev) => [...prev, matchingVoucher]);
-      showToast("Voucher applied successfully");
+      toast("Voucher applied successfully",0);
   
       // Xóa input sau khi áp dụng
       setCode("");
@@ -162,6 +164,18 @@ export const PaymentDetails = () => {
   // Hàm tạo đơn hàng
   const createOrder = async () => {
     try {
+      if (!state.email || !state.phone || !state.address || !state.name) {
+        showToast("Please fill in all delivery information fields", 1);
+        return;
+      }
+      if (!loggedUser.userid) {
+        showToast("User information is missing", 1);
+        return;
+      }
+      if (!checkout || checkout.length === 0) {
+        showToast("No products in the order to process", 1);
+        return;
+      }
       if(subTotal != 0)
       {
       const responseOrder = await api.post(
@@ -188,7 +202,7 @@ export const PaymentDetails = () => {
         if (responseOrderItem.status === 200) {
           // await api.delete(`deleteCartitemByUserID?userid=${loggedUser.userid}`, {}, { headers: { "Content-Type": "application/json" } });
           if (discountAmountOnVouchers != 0) {
-            const ordersResponse = await api.get(`getOrdersByUserId?userid=${loggedUser.userid}`);
+            const ordersResponse = await api.get(`getOrdersByUserIdNotPaging?userid=${loggedUser.userid}`);
             if (ordersResponse.status === 200) {
               const orders = ordersResponse.data.data;
               // Bước 2: Lấy order_id của đơn hàng cuối cùng
@@ -203,10 +217,11 @@ export const PaymentDetails = () => {
                 };
                 // Gọi API addOrderVoucher cho mỗi voucher_id
                 const response = await api.post('addOrderVoucher', orderVoucher);
+                console.log(response)
               }
             }
           }
-          showToast("Order placed successfully");
+          toast("Order placed successfully", 0)
           router.push("/profile/order")
         } else {
           showToast("Failed to add order items");
@@ -479,7 +494,6 @@ export const PaymentDetails = () => {
               <Stack>
                 <Radio value="cashOnDelivery">COD</Radio>
                 <Radio value="vnPay">VNPay</Radio>
-                <Radio value="creditCard">Credit Card</Radio>
               </Stack>
             </RadioGroup>
 

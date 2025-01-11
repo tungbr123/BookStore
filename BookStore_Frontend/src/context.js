@@ -46,7 +46,7 @@ function DeliveryInfoProvider({ children }) {
           setState({
             name: data1.lastname + " " + data1.firstname,
             phone: data1.phone,
-            address: "Chưa có địa chỉ", // Giá trị mặc định khi không có địa chỉ
+            address: "", // Giá trị mặc định khi không có địa chỉ
             email: data1.email,
           });
           return;

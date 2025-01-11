@@ -168,6 +168,17 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
+	public ApiResponse<Object> getOrdersByUserIdNotPage(Long userid) {
+		try {
+			List<Orders> ordersList = orderRepository.findByUserid1(userid);		
+			return ApiResponse.builder().statusCode("200").message("Get Orders Successfully").data(ordersList).build();
+		} catch (Exception e) {
+			return ApiResponse.builder().statusCode("500").message("Internal Server Error: " + e.getMessage())
+					.data(null).build();
+		}
+	}
+	
+	@Override
 	public Page<Orders> getOrdersByUserId(Long userid, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
 		return orderRepository.findByUserid(userid, pageable);

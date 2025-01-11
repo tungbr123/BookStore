@@ -22,7 +22,8 @@ import {
     HStack,
     Text,
     IconButton,
-    Select, // Import Select component for dropdowns
+    Select,
+    Badge, // Import Select component for dropdowns
 } from '@chakra-ui/react';
 import { AddIcon, DeleteIcon, EditIcon } from '@chakra-ui/icons';
 import axios from 'axios';
@@ -61,7 +62,34 @@ const AddressManagement = ({ userId }) => {
         };
         fetchCities();
     }, []);
+    const handleSetDefaultAddress = async (id) => {
+        try {
+            const response = await axios.get(`http://localhost:8080/setDefaultAddress?id=${id}&userId=${loggedUser.userid}`,
 
+            );
+            setAddresses((prevAddresses) =>
+                prevAddresses.map((addr) => ({
+                    ...addr,
+                    is_default: addr.id === id ? 1 : 0,
+                }))
+            );
+            toast({
+                title: 'Default address updated',
+                description: 'The default address has been updated successfully.',
+                status: 'success',
+                duration: 3000,
+                isClosable: true,
+            });
+        } catch (error) {
+            toast({
+                title: 'Operation failed',
+                description: 'Failed to set the default address.',
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+            });
+        }
+    };
     const fetchDistricts = async (cityCode) => {
         const response = await axios.get(`https://provinces.open-api.vn/api/p/${cityCode}?depth=2`);
         setDistricts(response.data.districts);
@@ -181,7 +209,9 @@ const AddressManagement = ({ userId }) => {
             <Heading size="lg" mb={6}>Address Management</Heading>
             <VStack spacing={4} align="stretch">
                 {addresses.map((address) => (
-                    <HStack key={address.id} spacing={4} align="center" w="full" p={4} borderWidth={1} borderRadius="lg">
+                    <HStack key={address.id} spacing={4} align="center"
+                        w="full" p={4} borderWidth={1} borderRadius="lg"
+                        bg={address.is_default ? 'blue.50' : 'white'}>
                         <Box flex="1">
                             <Text>
                                 <b>Address:</b> {address.apart_num}/ {address.street}/<br />
@@ -197,7 +227,17 @@ const AddressManagement = ({ userId }) => {
                             colorScheme="red"
                             icon={<DeleteIcon />}
                             onClick={() => handleRemoveAddress(address.id)}
+                            isDisabled={address.is_default} // Disable delete for default address
                         />
+                        {!address.is_default && (
+                            <Button
+                                size="sm"
+                                colorScheme="teal"
+                                onClick={() => handleSetDefaultAddress(address.id)}
+                            >
+                                Set Default
+                            </Button>
+                        )}
                     </HStack>
                 ))}
                 <Button leftIcon={<AddIcon />} colorScheme="blue" onClick={onOpen}>Add Address</Button>

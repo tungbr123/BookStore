@@ -52,7 +52,11 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
 			+ "GROUP BY userid ORDER BY order_count DESC OFFSET 0 ROWS FETCH FIRST 3 ROWS ONLY", nativeQuery = true)
 	List<Object[]> findTopUsersWithOrderCountAndRevenue();
 
+	@Query(value="Select * from Orders where status = 'completed' and userid = :userid", nativeQuery=true)
 	List<Orders> findByUserid(Long userid);
+	
+	@Query(value="Select * from Orders where userid = :userid", nativeQuery=true)
+	List<Orders> findByUserid1(Long userid);
 
 	@Query(value = "SELECT SUM(o.money_from_user) FROM Orders o WHERE o.status = 'delivering'", nativeQuery = true)
 	Long findRevenueByDelivering();

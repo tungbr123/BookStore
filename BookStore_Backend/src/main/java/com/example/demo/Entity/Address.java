@@ -42,5 +42,8 @@ public class Address {
     
     @Column(name = "apart_num")
 	private String apart_num;
+    
+    @Column(name = "is_default")
+    private int is_default;
 	
 }

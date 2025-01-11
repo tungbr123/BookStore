@@ -28,8 +28,8 @@ public interface ProductRepository extends JpaRepository<Product, Long>{
     @Query(value = "SELECT TOP 5 * FROM product ORDER BY sold DESC", nativeQuery = true)
     List<Product> findTop5BestSellingProducts(); // Bestselling
     
-    @Query(value = "SELECT TOP 5 * FROM product where category_id = :categoryid", nativeQuery = true)
-    List<Product> getAllProductByCategory(int categoryid);
+    @Query(value = "SELECT distinct TOP 5 p.* FROM product p,Product_Category pc where p.id = pc.product_id and pc.category_id IN (select category_id from Product_Category where product_id=:productid)", nativeQuery = true)
+    List<Product> getAllProductByCategory(int productid);
 
     @Query(value = "SELECT TOP 5 * FROM product ORDER BY rating DESC", nativeQuery = true)
     List<Product> findTop5TrendingProducts(); // Trending

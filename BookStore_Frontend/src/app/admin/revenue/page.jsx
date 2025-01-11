@@ -39,6 +39,7 @@ import { useRouter } from 'next/navigation';
 import showToast from '@/hooks/useToast';
 import { useSelector } from 'react-redux';
 
+
 // Register ChartJS modules
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend);
 
@@ -63,6 +64,11 @@ const RevenueDashboard = () => {
   const loggedUser = useSelector((state) => state.auth);
   const chartRef = useRef();
 
+  useEffect(() => {
+    if (!loggedUser.token || loggedUser.role != 1) {
+      router.push('/signin');
+    }
+  }, [loggedUser.token, loggedUser.role, router]);
   const fetchRevenueData = async () => {
     try {
       const response = await axios.get('http://localhost:8080/getRevenue');
@@ -91,7 +97,20 @@ const RevenueDashboard = () => {
       console.error('Error fetching revenue data:', error);
     }
   };
-
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(date);
+  };
+  const formatOrderDates = (orders) => {
+    return orders.map(order => ({
+      ...order,
+      date_order: formatDate(order.date_order), // Định dạng date_order
+    }));
+  };
   const fetchMonthlyRevenue = async (start, end) => {
     try {
       const startFormatted = moment(start).format('YYYY-MM-DD');
@@ -163,7 +182,7 @@ const RevenueDashboard = () => {
     labels: ['Canceled', 'Pending', 'Delivering', 'Completed'],
     datasets: [
       {
-        label: 'Total Money From Orders by Status',
+        label: 'Total Money of Orders by Status',
         data: [
           revenueData.getRevenueByCanceled,
           revenueData.getRevenueByPending,
@@ -187,7 +206,7 @@ const RevenueDashboard = () => {
       },
     ],
   };
-
+  const formattedOrders = formatOrderDates(selectedUserOrders);
   return (
     <Container maxW="container.xl" py={4}>
       <Heading size="lg" mb={4}>Revenue Statistics</Heading>
@@ -262,7 +281,7 @@ const RevenueDashboard = () => {
       </Box>
 
       <Box mt={8}>
-        <Heading size="md" mb={4}>Revenue by Order Status</Heading>
+        <Heading size="md" mb={4}>Total Money of Orders by Status</Heading>
         <SimpleGrid columns={1} spacing={4}>
           <Bar data={barChartData} options={options}
             ref={chartRef}
@@ -329,7 +348,7 @@ const RevenueDashboard = () => {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {selectedUserOrders.map((order) => (
+                  {formattedOrders.map((order) => (
                     <React.Fragment key={order.id}>
                       {order.orderItems.map((product, index) => (
                         <Tr key={index}>
@@ -345,7 +364,7 @@ const RevenueDashboard = () => {
                           <Td border="1px" borderColor="gray.300">{product.name}</Td>
                           {index === 0 && (
                             <>
-                              <Td rowSpan={order.orderItems.length} border="1px" borderColor="gray.300">{order.dateOrder}</Td>
+                              <Td rowSpan={order.orderItems.length} border="1px" borderColor="gray.300">{order.date_order}</Td>
                               <Td rowSpan={order.orderItems.length} border="1px" borderColor="gray.300">{order.status}</Td>
                             </>
                           )}
@@ -378,7 +397,7 @@ const RevenueDashboard = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </Container>
+    </Container> 
 
   );
 };

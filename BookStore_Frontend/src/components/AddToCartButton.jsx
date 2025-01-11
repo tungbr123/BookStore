@@ -11,6 +11,7 @@ import { AppConText } from '@/context/AppContext';
 import api from '@/ApiProcess/api';
 import { useCart } from '@/CartContext';
 import { useRecentlyViewedProducts } from '@/RecentlyViewedProductsContext';
+import useCustomToast from '@/hooks/toast';
 
 
 // interface IAddToCartButtonProps {
@@ -23,6 +24,7 @@ export const AddToCartButton = ({ product, count }) => {
   const loggedUser = useSelector((state) => state.auth)
   const router = useRouter();
   const {recentlyViewed, addToRecentlyViewed } = useRecentlyViewedProducts();
+  const toast = useCustomToast();
 
   const fetchCartItems = async () => {
     try {
@@ -40,11 +42,9 @@ export const AddToCartButton = ({ product, count }) => {
           console.log(data)
 
       } else {
-        showToast("Lấy thất bại");
         setCart([])
       }
     } catch (error) {
-      showToast("Lỗi khi lấy cartitem");
       console.error("Error fetching cart items", error);
       setCart([])
     };
@@ -81,16 +81,16 @@ export const AddToCartButton = ({ product, count }) => {
         });
         if (responseCart.status === 200) {
           fetchCartItems();
-          showToast('Đã thêm vào giỏ hàng thành công');
+          toast('Added to your cart',0);
         } else {
-          const message = 'Thêm giỏ hàng thất bại';
+          const message = 'Failed to add to your cart';
           showToast(message);
           throw new Error(message);
         }
-      } catch (error) {
+      } catch (error) { 
 
-        const message = 'Đã xảy ra lỗi, vui lòng thử lại';
-        showToast(message + error);
+        const message = 'error';
+        console.log(message + error);
       }
     }
     else

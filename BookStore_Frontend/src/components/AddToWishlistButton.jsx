@@ -10,6 +10,7 @@ import showToast from '@/hooks/useToast';
 import api from '@/ApiProcess/api';
 import { useWishList } from '@/WishlistContext';
 import { useRecentlyViewedProducts } from '@/RecentlyViewedProductsContext';
+import useCustomToast from '@/hooks/toast';
 
 
 export const AddToWishlistButton = ({ product }) => {
@@ -18,7 +19,7 @@ export const AddToWishlistButton = ({ product }) => {
   const router = useRouter()
   const {wishlist, setWishlist, fetchWishlistitem} = useWishList();
   const {recentlyViewed, addToRecentlyViewed } = useRecentlyViewedProducts();
-
+  const toast = useCustomToast(); 
   useEffect(() => {
     if (loggedUser.userid) {      
       fetchWishlistitem();
@@ -26,37 +27,50 @@ export const AddToWishlistButton = ({ product }) => {
   }, [loggedUser.userid]);
 
   const handleAddToWishlist = async () => {
-    addToRecentlyViewed(product)
-    if (loggedUser.token) {
-      try {
-        const response = await api.post('addToWishlist', {
+
+  
+    if (!loggedUser.token) {
+      router.push('signin');
+      return;
+    }
+    addToRecentlyViewed(product);  
+    // Kiểm tra sản phẩm có trong wishlist hay chưa
+    const isProductInWishlist = wishlist.some(
+      (item) => item.id === product.id
+    );
+  
+    if (isProductInWishlist) {
+      toast('This product is already in your wishlist', 1); // type 1 = error
+      return;
+    }
+  
+    // Nếu chưa có, thêm sản phẩm vào wishlist
+    try {
+      const response = await api.post(
+        'addToWishlist',
+        {
           userid: loggedUser.userid,
           productid: product.id,
-        }, {
+        },
+        {
           headers: {
             'Content-Type': 'application/json',
           },
-        });
-
-
-        if (response.status === 200) {
-          fetchWishlistitem()
-          showToast('Đã thêm vào yêu thích thành công');
-        } else {
-          const message = 'Thêm thất bại';
-          showToast(message);
-          throw new Error(message);
         }
-      } catch (error) {
-
-        const message = 'Đã xảy ra lỗi, vui lòng thử lại';
-        showToast(message);
+      );
+  
+      if (response.status === 200) {
+        fetchWishlistitem(); // Cập nhật lại danh sách wishlist
+        toast('Added to your wishlist', 0); // type 0 = success
+      } else {
+        const message = 'Failed to add your wishlist';
+        toast(message, 1);
+        throw new Error(message);
       }
+    } catch (error) {
+      toast('An error occurred while adding to wishlist', 1);
     }
-
-    else
-      router.push('signin')
-  }
+  };
   return (
     <>
       {isAdded('wishlist', product.id) ? (

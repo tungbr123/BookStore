@@ -30,6 +30,8 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import showToast from '@/hooks/useToast';
+import { useRouter } from 'next/navigation';
+import { useSelector } from 'react-redux';
 
 const ProductForm = ({ products, setProducts, selectedProduct, setSelectedProduct, onClose, handleSubmitProduct }) => {
   const [name, setName] = useState('');
@@ -287,6 +289,15 @@ const ProductManagement = () => {
   const [pageSize, setPageSize] = useState(5);
   const [filter, setFilter] = useState("all");
   const [reset, setReset] = useState(0)
+
+  const loggedUser = useSelector((state) => state.auth);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loggedUser.token || loggedUser.role != 1) {
+      router.push('/signin');
+    }
+  }, [loggedUser.token, loggedUser.role, router]);
   useEffect(() => {
     // Fetch products from backend API
     const fetchProducts = async () => {
